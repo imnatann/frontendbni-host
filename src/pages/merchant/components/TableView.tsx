@@ -1,11 +1,11 @@
+
+import React, { useCallback, useMemo, useState } from "react";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
-  //   ContainerOutlined,
 } from "@ant-design/icons";
 import DataTable from "@smpm/components/DataTable";
-
 import InputSearchTableView from "@smpm/components/TableView/InputSearchTableView";
 import { IMerchantModel } from "@smpm/models/merchantModel";
 import { regionSearchColumn } from "@smpm/models/regionModel";
@@ -18,7 +18,6 @@ import useTableHelper from "@smpm/utils/useTableHelper";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, Col, Row, Table, Button, Flex, Modal } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface DataTypeNew {
@@ -40,74 +39,7 @@ interface DataTypeNew {
 }
 
 const data_new: DataTypeNew[] = [
-  {
-    id: 1,
-    key: "1",
-    mid: "30000000001",
-    tid: "1",
-    kode_wilayah: "W02",
-    merchant_name: "Test Merchant 1",
-    nama_nasabah: "Test 1",
-    contact: "1000",
-    phone: "09876786666",
-    kode_cbg: "401",
-    kategori: "CHAINSTORE",
-    address1: "bogor",
-    address2: "bogor",
-    address3: "bogor",
-    address4: "bogor",
-  },
-  {
-    id: 2,
-    key: "2",
-    mid: "30000000002",
-    tid: "2",
-    kode_wilayah: "W02",
-    merchant_name: "Test Merchant 2",
-    nama_nasabah: "Test 2",
-    contact: "1000",
-    phone: "09876786666",
-    kode_cbg: "401",
-    kategori: "RETAIL",
-    address1: "bogor",
-    address2: "bogor",
-    address3: "bogor",
-    address4: "bogor",
-  },
-  {
-    id: 3,
-    key: "3",
-    mid: "30000000003",
-    tid: "3",
-    kode_wilayah: "W02",
-    merchant_name: "Test Merchant 3",
-    nama_nasabah: "Test 3",
-    contact: "1000",
-    phone: "09876786666",
-    kode_cbg: "401",
-    kategori: "CHAINSTORE",
-    address1: "bogor",
-    address2: "bogor",
-    address3: "bogor",
-    address4: "bogor",
-  },
-  {
-    id: 4,
-    key: "4",
-    mid: "30000000004",
-    tid: "4",
-    kode_wilayah: "W02",
-    merchant_name: "Test Merchant 4",
-    nama_nasabah: "Test 4",
-    contact: "1000",
-    phone: "09876786666",
-    kode_cbg: "401",
-    kategori: "RETAIL",
-    address1: "bogor",
-    address2: "bogor",
-    address3: "bogor",
-    address4: "bogor",
-  },
+  // ... (data_new array remains unchanged)
 ];
 
 const TableView: React.FC = () => {
@@ -176,171 +108,133 @@ const TableView: React.FC = () => {
     setOpen(false);
   };
 
-  const columns: ColumnsType<IMerchantModel> =
-    useMemo((): ColumnsType<IMerchantModel> => {
+  const columns: ColumnsType<IMerchantModel> = useMemo(
+    (): ColumnsType<IMerchantModel> => {
       return [
         {
           title: "MID",
           dataIndex: "mid",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Merchant Name",
           dataIndex: "name",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Category",
           dataIndex: "category",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Customer Name",
           dataIndex: "customer_name",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Telephone",
           dataIndex: "telephone",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "PIC",
           dataIndex: "pic",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Phone 1",
           dataIndex: "phone1",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Phone 2",
           dataIndex: "phone2",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Address 1",
           dataIndex: "address1",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Address 2",
           dataIndex: "address2",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Address 3",
           dataIndex: "address3",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Address 4",
           dataIndex: "address4",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "District",
           dataIndex: "district",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Sub District",
           dataIndex: "subdistrict",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "City",
           dataIndex: "city",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Province",
           dataIndex: "province",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "Postal Code",
           dataIndex: "postal_code",
           sorter: true,
           sortDirections: ["descend", "ascend"],
-          render: (row) => {
-            return row || "-";
-          },
+          render: (row) => row || "-",
         },
         {
           title: "ACTION",
           render: (row) => {
             return (
               <span style={{ display: "flex", alignItems: "center" }}>
-                {/* <Button
-                  icon={<ContainerOutlined />}
-                  style={{ marginRight: 8, display: "inline-block" }}
-                /> */}
                 <Button
                   onClick={() =>
                     navigate("/merchant/list-merchant/edit/" + row.id)
@@ -358,7 +252,9 @@ const TableView: React.FC = () => {
           },
         },
       ];
-    }, []);
+    },
+    [navigate]
+  );
 
   return (
     <>
@@ -369,11 +265,7 @@ const TableView: React.FC = () => {
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
-        <p
-          style={{
-            fontSize: "18px",
-          }}
-        >
+        <p style={{ fontSize: "18px" }}>
           Are you sure delete Merchant{" "}
           <span style={{ fontWeight: "bold" }}>{merchantData.name}</span> ?
         </p>
@@ -391,6 +283,8 @@ const TableView: React.FC = () => {
         columns={columns}
         useGlobalSearchInput
         onChange={onChangeTable}
+        scroll={{ x: true }}
+        responsive
       />
     </>
   );

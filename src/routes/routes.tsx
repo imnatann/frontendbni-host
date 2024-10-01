@@ -11,6 +11,7 @@ export const MerchantList = lazy(() => import("@smpm/pages/Merchant/Index"))
 export const Role = lazy(() => import("@smpm/pages/Role/Index"))
 export const User = lazy(() => import("@smpm/pages/User/Index"))
 export const Vendor = lazy(() => import("@smpm/pages/Vendor/Index"))
+export const Maintenance = lazy(() => import("@smpm/pages/maintenance/Index"))
 
 export const routes: RouteObject[] = [
 	{
@@ -125,10 +126,10 @@ export const routes: RouteObject[] = [
 						path: "list-merchant/edit/:id",
 						Component: lazy(() => import("@smpm/pages/Merchant/Edit")),
 					},
-					// {
-					//   path: "maintenance",
-					//   element: <MerchantMaintenance />,
-					// },
+					{  
+						path: "maintenance-merchant",  
+						element: <Maintenance />,  
+					},
 				],
 			},
 			// {
