@@ -1,3 +1,4 @@
+
 import { Layout } from "antd";
 import React from "react";
 import { useMediaQuery } from "react-responsive";
@@ -13,21 +14,27 @@ interface ISidebar {
 
 const Sidebar: React.FC<ISidebar> = ({ collapsed, children, className }) => {
   const isDesktopOrLaptop = useMediaQuery({ minWidth: 1224 });
+  const isMobileOrTablet = useMediaQuery({ maxWidth: 1223 });
+
+  // Tinggi navbar, sesuaikan dengan tinggi navbar Anda
+  const navbarHeight = 46;
+
   return (
     <Sider
       trigger={null}
       collapsible={isDesktopOrLaptop}
-      collapsed={collapsed ? true : false}
-      width={250}
+      collapsed={collapsed}
+      width={isMobileOrTablet ? "100%" : 250}
       breakpoint="lg"
-      className={className}
+      className={`${className} ${isMobileOrTablet ? 'mobile-sidebar' : ''}`}
       style={{
         overflow: "auto",
-        height: "100vh",
+        height: isMobileOrTablet ? `calc(100vh - ${navbarHeight}px)` : "100vh",
         position: "fixed",
         left: 0,
-        top: 46,
+        top: navbarHeight,
         bottom: 0,
+        zIndex: isMobileOrTablet ? 1000 : 'auto',
       }}
       theme="light"
       collapsedWidth={isDesktopOrLaptop ? 50 : 0}

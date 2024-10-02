@@ -12,6 +12,7 @@ export const Role = lazy(() => import("@smpm/pages/Role/Index"))
 export const User = lazy(() => import("@smpm/pages/User/Index"))
 export const Vendor = lazy(() => import("@smpm/pages/Vendor/Index"))
 export const Maintenance = lazy(() => import("@smpm/pages/maintenance/Index"))
+export const UserEdit = lazy(() => import("@smpm/pages/User/Edit"))
 
 export const routes: RouteObject[] = [
 	{
@@ -82,6 +83,7 @@ export const routes: RouteObject[] = [
 				children: [
 					{ path: "role", element: <Role /> },
 					{ path: "user", element: <User /> },
+					{ path: "user/edit/:id", element: <UserEdit /> },
 					{ path: "region", element: <Region /> },
 					{ path: "vendor", element: <Vendor /> },
 				],

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import DataTable from "@smpm/components/DataTable"
 import { IRoleModel } from "@smpm/models/roleModel"
