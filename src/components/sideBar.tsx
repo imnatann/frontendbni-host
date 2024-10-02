@@ -53,19 +53,20 @@ const Sidebar: React.FC<ISidebar> = ({ collapsed, onCollapse, children, classNam
   return (  
     <Sider  
       trigger={null}  
-      collapsible={isDesktop}  
-      collapsed={isDesktop ? collapsed : internalCollapsed}  
+      collapsible={true}  
+      collapsed={internalCollapsed}  
       width={getSiderWidth()}  
       breakpoint="lg"  
       className={`${className} ${(isMobile || isMedium) ? 'responsive-sidebar' : ''}`}  
       style={{  
         overflow: "auto",  
-        height: (isMobile || isMedium) ? `calc(100vh - ${navbarHeight}px)` : "100vh",  
+        height: "100vh",  
         position: "fixed",  
-        left: 0,  
+        left: internalCollapsed ? -getSiderWidth() : 0,  
         top: navbarHeight,  
         bottom: 0,  
-        zIndex: (isMobile || isMedium) ? 1000 : 'auto',  
+        zIndex: 1000,  
+        transition: 'all 0.2s',  
       }}  
       theme="light"  
       collapsedWidth={getCollapsedWidth()}  
