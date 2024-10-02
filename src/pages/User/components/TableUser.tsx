@@ -7,13 +7,16 @@ import { useDebounce } from "@smpm/utils/useDebounce"
 import useTableHelper from "@smpm/utils/useTableHelper"
 import { ColumnsType } from "antd/es/table"
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
-import { Button, Space, Popconfirm, Tag, message } from 'antd';
+import { Button, Space, Popconfirm, Tag, message, Modal, Form, Input, Select } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getUser, deleteUser } from '@smpm/services/userService';
+import { getUser, deleteUser, updateUser } from '@smpm/services/userService';
 import { IPaginationRequest, IPaginationResponse, IBaseResponseService } from "@smpm/models";
+
+const { Option } = Select;
 
 const TableUser: React.FC = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const { onChangeTable, onChangeSearchBy } = useTableHelper<IUserModel>()
 
   const [search, setSearch] = useState<string>("")
@@ -21,6 +24,8 @@ const TableUser: React.FC = () => {
 
   const [user, setUser] = useState<IPaginationResponse<IUserModel> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingUser, setEditingUser] = useState<IUserModel | null>(null);
   const [pagination, setPagination] = useState<IPaginationRequest>({
     search: '',
     page: 1,
@@ -53,7 +58,9 @@ const TableUser: React.FC = () => {
   const onSearch = (value: string) => setSearch(value)
 
   const handleEdit = (record: IUserModel) => {
-    navigate(`/edit/${record.id}`);
+    setEditingUser(record);
+    form.setFieldsValue(record);
+    setIsModalVisible(true);
   };
 
   const handleDelete = async (record: IUserModel) => {
@@ -66,6 +73,27 @@ const TableUser: React.FC = () => {
       console.error('Error deleting user:', error);
       message.error('Failed to delete user');
     }
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingUser) {
+        await updateUser(editingUser.id, values);
+        message.success('User updated successfully');
+        setIsModalVisible(false);
+        const updatedResponse = await getUser(pagination);
+        setUser(updatedResponse.result);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      message.error('Failed to update user');
+    }
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
   };
 
   const renderComplexObject = (obj: any) => {
@@ -162,21 +190,70 @@ const TableUser: React.FC = () => {
   console.log('User data before render:', user?.data);
 
   return (
-    <DataTable<IUserModel>
-      dataSource={user?.data}
-      pagination={{
-        current: user?.meta.page,
-        pageSize: user?.meta.take,
-        total: user?.meta.item_count,
-      }}
-      loading={isLoading}
-      bordered
-      onChangeSearchBy={handleChangeSearchBy}
-      onGlobalSearch={onSearch}
-      columns={columns}
-      useGlobalSearchInput
-      onChange={handleTableChange}
-    />
+    <>
+      <DataTable<IUserModel>
+        dataSource={user?.data}
+        pagination={{
+          current: user?.meta.page,
+          pageSize: user?.meta.take,
+          total: user?.meta.item_count,
+        }}
+        loading={isLoading}
+        bordered
+        onChangeSearchBy={handleChangeSearchBy}
+        onGlobalSearch={onSearch}
+        columns={columns}
+        useGlobalSearchInput
+        onChange={handleTableChange}
+      />
+      <Modal
+        title="Edit User"
+        visible={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+      >
+        <Form form={form} layout="vertical" name="editUserForm">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please input the name!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: 'Please input the email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="role"
+            label="Role"
+            rules={[{ required: true, message: 'Please select a role!' }]}
+          >
+            <Select>
+              <Option value="admin">Admin</Option>
+              <Option value="user">User</Option>
+              <Option value="guest">Guest</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label="Status"
+            rules={[{ required: true, message: 'Please select a status!' }]}
+          >
+            <Select>
+              <Option value="Active">Active</Option>
+              <Option value="Inactive">Inactive</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   )
 }
 

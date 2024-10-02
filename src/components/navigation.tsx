@@ -7,6 +7,9 @@ import {
   IconReportAnalytics,
   IconSortDescendingNumbers,
   IconUsersGroup,
+  IconFile,
+  IconCurrencyDollar,
+  IconCheckbox,
 } from "@tabler/icons-react";
 import { Layout, Menu, MenuProps } from "antd";
 import React, { useMemo, useState } from "react";
@@ -70,6 +73,9 @@ const items: MenuItem[] = [
   getItem("Report", "report", <IconReportAnalytics size="1.2rem" />),
   // getItem("Live Chat", "live-chat", <IconMessageReport size="1.2rem" />),
   // getItem("Audit", "audit", <IconListDetails size="1.2rem" />),
+  getItem("Document", "document", <IconFile size="1.2rem" />),
+  getItem("Payment", "payment", <IconCurrencyDollar size="1.2rem" />),
+  getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),
 ];
 
 // submenu keys of first level

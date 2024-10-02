@@ -15,6 +15,14 @@ export const getVendor = async (
 	return response.data
 }
 
+export const updateVendor = async (  
+	id: number,  
+	vendorData: Partial<IVendorModel>  
+  ): Promise<IBaseResponseService<IVendorModel>> => {  
+	const response = await axios.put(`/vendor/${id}`, vendorData);  
+	return response.data;  
+  };  
+
 export const getAllVendor = async (): Promise<
 	IBaseResponseService<IVendorModel[]>
 > => {

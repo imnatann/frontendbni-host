@@ -5,19 +5,24 @@ import { useDebounce } from "@smpm/utils/useDebounce"
 import useTableHelper from "@smpm/utils/useTableHelper"  
 import { ColumnsType } from "antd/es/table"  
 import { CheckboxValueType } from 'antd/es/checkbox/Group';  
-import { Button, Space, Popconfirm, Tag, message } from 'antd';  
+import { Button, Space, Popconfirm, Tag, message, Modal, Form, Input, Select } from 'antd';  
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';  
-import { getVendor } from '@smpm/services/vendorService';  
+import { getVendor, updateVendor } from '@smpm/services/vendorService';  
 import { IPaginationRequest, IPaginationResponse, IBaseResponseService } from "@smpm/models";  
+
+const { Option } = Select;  
 
 const TableVendor: React.FC = () => {  
   const { onChangeTable, onChangeSearchBy } = useTableHelper<IVendorModel>()  
+  const [form] = Form.useForm();  
 
   const [search, setSearch] = useState<string>("")  
   const debouncedSearch = useDebounce(search, 500)  
 
   const [vendor, setVendor] = useState<IPaginationResponse<IVendorModel> | null>(null);  
   const [isLoading, setIsLoading] = useState(true);  
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);  
+  const [editingVendor, setEditingVendor] = useState<IVendorModel | null>(null);  
   const [pagination, setPagination] = useState<IPaginationRequest>({  
     search: '',  
     page: 1,  
@@ -50,8 +55,32 @@ const TableVendor: React.FC = () => {
   const onSearch = (value: string) => setSearch(value)  
 
   const handleEdit = (record: IVendorModel) => {  
-    console.log('Edit vendor:', record);  
-    // Implement edit logic here  
+    setEditingVendor(record);  
+    form.setFieldsValue(record);  
+    setIsEditModalVisible(true);  
+  };  
+
+  const handleEditModalOk = async () => {  
+    try {  
+      const values = await form.validateFields();  
+      if (editingVendor) {  
+        await updateVendor(editingVendor.id, values);  
+        message.success('Vendor updated successfully');  
+        setIsEditModalVisible(false);  
+        // Refresh the vendor list  
+        const response: IBaseResponseService<IPaginationResponse<IVendorModel>> = await getVendor(pagination);  
+        setVendor(response.result);  
+      }  
+    } catch (error) {  
+      console.error('Failed to update vendor:', error);  
+      message.error('Failed to update vendor');  
+    }  
+  };  
+
+  const handleEditModalCancel = () => {  
+    setIsEditModalVisible(false);  
+    setEditingVendor(null);  
+    form.resetFields();  
   };  
 
   const handleDelete = async (record: IVendorModel) => {  
@@ -152,21 +181,67 @@ const TableVendor: React.FC = () => {
   console.log('Vendor data before render:', vendor?.data);  
 
   return (  
-    <DataTable<IVendorModel>  
-      dataSource={vendor?.data}  
-      pagination={{  
-        current: vendor?.meta.page,  
-        pageSize: vendor?.meta.take,  
-        total: vendor?.meta.item_count,  
-      }}  
-      loading={isLoading}  
-      bordered  
-      onChangeSearchBy={handleChangeSearchBy}  
-      onGlobalSearch={onSearch}  
-      columns={columns}  
-      useGlobalSearchInput  
-      onChange={handleTableChange}  
-    />  
+    <>  
+      <DataTable<IVendorModel>  
+        dataSource={vendor?.data}  
+        pagination={{  
+          current: vendor?.meta.page,  
+          pageSize: vendor?.meta.take,  
+          total: vendor?.meta.item_count,  
+        }}  
+        loading={isLoading}  
+        bordered  
+        onChangeSearchBy={handleChangeSearchBy}  
+        onGlobalSearch={onSearch}  
+        columns={columns}  
+        useGlobalSearchInput  
+        onChange={handleTableChange}  
+      />  
+      <Modal  
+        title="Edit Vendor"  
+        visible={isEditModalVisible}  
+        onOk={handleEditModalOk}  
+        onCancel={handleEditModalCancel}  
+      >  
+        <Form  
+          form={form}  
+          layout="vertical"  
+          name="edit_vendor_form"  
+        >  
+          <Form.Item  
+            name="name"  
+            label="Name"  
+            rules={[{ required: true, message: 'Please input the vendor name!' }]}  
+          >  
+            <Input />  
+          </Form.Item>  
+          <Form.Item  
+            name="code"  
+            label="Code"  
+            rules={[{ required: true, message: 'Please input the vendor code!' }]}  
+          >  
+            <Input />  
+          </Form.Item>  
+          <Form.Item  
+            name="type"  
+            label="Type"  
+            rules={[{ required: true, message: 'Please select the vendor type!' }]}  
+          >  
+            <Select>  
+              <Option value="supplier">Supplier</Option>  
+              <Option value="manufacturer">Manufacturer</Option>  
+              <Option value="distributor">Distributor</Option>  
+            </Select>  
+          </Form.Item>  
+          <Form.Item  
+            name="description"  
+            label="Description"  
+          >  
+            <Input.TextArea />  
+          </Form.Item>  
+        </Form>  
+      </Modal>  
+    </>  
   )  
 }  
 
