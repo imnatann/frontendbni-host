@@ -36,7 +36,7 @@ export const updateUser = async (
   id: number,
   userData: Partial<IUserModel>
 ): Promise<IBaseResponseService<IUserModel>> => {
-  const response = await axios.put(`/user/${id}`, userData);
+  const response = await axios.patch(`/user/${id}`, userData);
   return response.data;
 };
 
@@ -45,7 +45,7 @@ export const deleteUser = async (
   id: number
 ): Promise<IBaseResponseService<void>> => {
   const response = await axios.delete(`/user/${id}`);
-  return response.data;
+  return response.data; 
 };
 
 // Fungsi untuk mencari pengguna

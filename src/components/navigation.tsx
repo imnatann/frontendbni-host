@@ -66,7 +66,7 @@ const items: MenuItem[] = [
   getItem("Inventory", "inventory", <IconCalculator size="1.2rem" />, [  
     getItem("Warehouse EDC", "inventory/warehouse-edc"),  
     getItem("EDC Terpasang", "inventory/attached-edc"),  
-    getItem("EDC Tersedia", "inventory/available-edc"),  
+    // getItem("EDC Tersedia", "inventory/available-edc"),  
     getItem("Receive In", "inventory/receive-in"),  
     getItem("Receive Out", "inventory/receive-out"),  
   ]),  

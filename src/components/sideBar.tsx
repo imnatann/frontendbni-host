@@ -13,7 +13,7 @@ interface ISidebar {
 }  
 
 const Sidebar: React.FC<ISidebar> = ({ collapsed, onCollapse, children, className }) => {  
-  const isDesktop = useMediaQuery({ minWidth: 1224 });  
+  // const isDesktop = useMediaQuery({ minWidth: 1224 });  
   const isMedium = useMediaQuery({ minWidth: 768, maxWidth: 1223 });  
   const isMobile = useMediaQuery({ maxWidth: 767 });  
 

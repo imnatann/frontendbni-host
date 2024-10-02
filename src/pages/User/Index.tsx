@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   CloudUploadOutlined,
   HomeOutlined,
@@ -13,6 +13,12 @@ import { Breadcrumb, Button, Card, Space } from "antd"
 import TableUser from "./components/TableUser"
 
 const User: React.FC = () => {
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+
+  const handleAddUser = () => {
+    setIsAddModalVisible(true);
+  };
+
   return (
     <Page title="User">
       <PageLabel
@@ -46,7 +52,7 @@ const User: React.FC = () => {
         endSection={
           <Space>
             <Button icon={<CloudUploadOutlined />}>Export</Button>
-            <Button type="primary" icon={<PlusOutlined />}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleAddUser}>
               Add New User
             </Button>
           </Space>
@@ -54,7 +60,7 @@ const User: React.FC = () => {
       />
       <PageContent>
         <Card>
-          <TableUser />
+          <TableUser isAddModalVisible={isAddModalVisible} setIsAddModalVisible={setIsAddModalVisible} />
         </Card>
       </PageContent>
     </Page>

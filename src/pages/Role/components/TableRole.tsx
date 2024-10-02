@@ -4,7 +4,7 @@ import DataTable from "@smpm/components/DataTable"
 import { IRoleModel } from "@smpm/models/roleModel"
 import { useDebounce } from "@smpm/utils/useDebounce"
 import useTableHelper from "@smpm/utils/useTableHelper"
-import { getRole } from "@smpm/services/roleService"
+import { getRole, updateRole } from "@smpm/services/roleService"
 import { ColumnsType } from "antd/es/table"
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { Button, Space, Popconfirm, message, Modal, Form, Input, Select } from 'antd';
@@ -32,24 +32,24 @@ const TableRole: React.FC = () => {
     order_by: 'name'
   });
 
-  useEffect(() => {  
-    const fetchRoles = async () => {  
-      setIsLoading(true);  
-      try {  
-        const response: IBaseResponseService<IPaginationResponse<IRoleModel>> = await getRole({  
-          ...pagination,  
-          search: debouncedSearch,  
-        });  
-        setRoles(response.result);  
-      } catch (error) {  
-        console.error('Error fetching roles:', error);  
-        message.error('Failed to fetch roles');  
-      } finally {  
-        setIsLoading(false);  
-      }  
-    };  
-  
-    fetchRoles();  
+  const fetchRoles = async () => {
+    setIsLoading(true);
+    try {
+      const response: IBaseResponseService<IPaginationResponse<IRoleModel>> = await getRole({
+        ...pagination,
+        search: debouncedSearch,
+      });
+      setRoles(response.result);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      message.error('Failed to fetch roles');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoles();
   }, [debouncedSearch, pagination]);
 
   const onSearch = (value: string) => setSearch(value)
@@ -62,17 +62,32 @@ const TableRole: React.FC = () => {
 
   const handleDelete = (record: IRoleModel) => {
     console.log('Delete role:', record);
+    // Implement delete logic here
   };
 
-  const handleModalOk = () => {
-    form.validateFields().then(values => {
-      console.log('Updated role:', { ...editingRole, ...values });
-      // Here you would typically call an API to update the role
-      setIsModalVisible(false);
-      form.resetFields();
-    }).catch(info => {
-      console.log('Validate Failed:', info);
-    });
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingRole) {
+        // Remove 'id' from the values object
+        const { id, ...updateData } = values;
+        const response = await updateRole(editingRole.id, updateData);
+        if (response.status === 'success') {
+          message.success('Role updated successfully');
+          setIsModalVisible(false);
+          fetchRoles(); // Refresh the roles list
+        } else {
+          throw new Error(response.message || 'Update failed');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update role:', error);
+      if (error instanceof Error) {
+        message.error(`Failed to update role: ${error.message}`);
+      } else {
+        message.error('An unexpected error occurred while updating the role');
+      }
+    }
   };
 
   const handleModalCancel = () => {
@@ -83,25 +98,29 @@ const TableRole: React.FC = () => {
   const columns: ColumnsType<IRoleModel> = useMemo((): ColumnsType<IRoleModel> => {
     return [
       {
+        title: "ID",
+        dataIndex: "id",
+        sorter: true,
+      },
+      {
         title: "NAME",
         dataIndex: "name",
+        sorter: true,
+      },
+      {
+        title: "CODE",
+        dataIndex: "code",
+        sorter: true,
+      },
+      {
+        title: "TYPE",
+        dataIndex: "type",
         sorter: true,
       },
       {
         title: "DESCRIPTION",
         dataIndex: "description",
         sorter: true,
-      },
-      {
-        title: "PERMISSIONS",
-        dataIndex: "permissions",
-        render: (permissions: string[]) => permissions?.join(", ") || "No permissions",
-      },
-      {
-        title: "CREATED AT",
-        dataIndex: "createdAt",
-        sorter: true,
-        render: (date: string) => new Date(date).toLocaleDateString(),
       },
       {
         title: "ACTION",
@@ -170,22 +189,29 @@ const TableRole: React.FC = () => {
             <Input />
           </Form.Item>
           <Form.Item
+            name="code"
+            label="Code"
+            rules={[{ required: true, message: 'Please input the code!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="type"
+            label="Type"
+            rules={[{ required: true, message: 'Please select the type!' }]}
+          >
+            <Select placeholder="Select a type">
+              <Option value="PUSAT">PUSAT</Option>
+              <Option value="VENDOR">VENDOR</Option>
+              <Option value="WILAYAH">WILAYAH</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
             name="description"
             label="Description"
             rules={[{ required: true, message: 'Please input the description!' }]}
           >
             <Input.TextArea />
-          </Form.Item>
-          <Form.Item
-            name="permissions"
-            label="Permissions"
-            rules={[{ required: true, message: 'Please select at least one permission!' }]}
-          >
-            <Select mode="multiple" placeholder="Select permissions">
-              <Option value="read">Read</Option>
-              <Option value="write">Write</Option>
-              <Option value="delete">Delete</Option>
-            </Select>
           </Form.Item>
         </Form>
       </Modal>
