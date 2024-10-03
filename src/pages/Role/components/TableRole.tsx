@@ -65,31 +65,30 @@ const TableRole: React.FC = () => {
     // Implement delete logic here
   };
 
-  const handleModalOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (editingRole) {
-        // Remove 'id' from the values object
-        const { id, ...updateData } = values;
-        const response = await updateRole(editingRole.id, updateData);
-        if (response.status === 'success') {
-          message.success('Role updated successfully');
-          setIsModalVisible(false);
-          fetchRoles(); // Refresh the roles list
-        } else {
-          throw new Error(response.message || 'Update failed');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to update role:', error);
-      if (error instanceof Error) {
-        message.error(`Failed to update role: ${error.message}`);
-      } else {
-        message.error('An unexpected error occurred while updating the role');
-      }
-    }
-  };
-
+  const handleModalOk = async () => {  
+    try {  
+      const values = await form.validateFields();  
+      if (editingRole) {  
+        const { id, ...updateData } = values;  
+        const response = await updateRole(editingRole.id, updateData);  
+        
+         if (response && response.result) {  
+          message.success('Role updated successfully');  
+          setIsModalVisible(false);  
+          fetchRoles();  
+        } else {  
+           throw new Error(response.message || 'Update failed: Unexpected response format');  
+        }  
+      }  
+    } catch (error) {  
+      console.error('Failed to update role:', error);  
+      if (error instanceof Error) {  
+        message.error(`Failed to update role: ${error.message}`);  
+      } else {  
+        message.error('An unexpected error occurred while updating the role');  
+      }  
+    }  
+  };  
   const handleModalCancel = () => {
     setIsModalVisible(false);
     form.resetFields();

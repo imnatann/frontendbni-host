@@ -28,7 +28,7 @@ const ORDER_VALUE = {
 	descend: "desc",
 }
 
-const useTableHelper = <T,>(): ReturnUseTableHelper<T> => {
+const useTableHelper = <T,>(p0: { pagination: boolean }): ReturnUseTableHelper<T> => {
 	const [filter, setFilter] = useState<Record<string, any>>()
 	const [sortQuery, setSortQuery] = useState<string>("")
 	const [sort, setSort] = useState<{ order?: string; order_by?: string }>({

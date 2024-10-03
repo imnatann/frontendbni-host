@@ -73,11 +73,11 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
       const values = await form.validateFields();
       if (editingVendor) {
         const response = await updateVendor(editingVendor.id, values);
-        if (response.status === 'success') {
+        if (response && response.result) {
           message.success('Vendor updated successfully');
           setIsEditModalVisible(false);
-          fetchVendor(); // Refresh the data
-          refreshData(); // Call the refreshData prop to update parent component if necessary
+          fetchVendor();
+          refreshData(); 
         } else {
           throw new Error('Update failed');
         }

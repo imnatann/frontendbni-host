@@ -76,7 +76,7 @@ const Sidebar: React.FC<ISidebar> = ({ collapsed, onCollapse, children, classNam
           </div>
         </div>
       </Sider>
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;

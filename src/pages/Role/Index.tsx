@@ -30,14 +30,13 @@ const Role: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await  form.validateFields();
       const response = await createRole(values);
-      if (response.status === 'success') {
+       if (response && response.result) {
         message.success('Role created successfully');
         setIsModalVisible(false);
         form.resetFields();
-        // You might want to refresh the TableRole here
-      } else {
+       } else {
         throw new Error(response.message || 'Creation failed');
       }
     } catch (error) {

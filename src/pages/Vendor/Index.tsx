@@ -26,11 +26,11 @@ const Vendor: React.FC = () => {
     try {
       const values = await form.validateFields();
       const response = await createVendor(values);
-      if (response.status === 'success') {
+      if (response && response.result) {
         message.success('Vendor added successfully');
         setIsAddModalVisible(false);
         form.resetFields();
-        setRefreshKey(prevKey => prevKey + 1); // Trigger a refresh of the table
+        setRefreshKey(prevKey => prevKey + 1); 
       } else {
         throw new Error(response.message || 'Failed to add vendor');
       }

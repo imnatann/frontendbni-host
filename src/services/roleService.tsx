@@ -21,6 +21,7 @@ export const updateRole = async (
   roleData: Partial<IRoleModel>
 ): Promise<IBaseResponseService<IRoleModel>> => {
   const response = await axios.patch(`/role/${id}`, roleData);
+  // console.log('Update role response:', response);  
   return response.data;
 };
 

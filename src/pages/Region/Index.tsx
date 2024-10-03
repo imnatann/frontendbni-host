@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import {
 	CloudUploadOutlined,
 	HomeOutlined,
@@ -7,12 +7,12 @@ import {
 } from "@ant-design/icons"
 import PageContent from "@smpm/components/PageContent"
 import PageLabel from "@smpm/components/pageLabel"
-import Page from "@smpm/components/PageTitle"
-import { IconUsersGroup } from "@tabler/icons-react"
+ import { IconUsersGroup } from "@tabler/icons-react"
 import { Breadcrumb, Button, Card, Space, Modal, Form, Input, message } from "antd"
 import TableRegion from "./components/TableRegion"
 import { createRegion } from "@smpm/services/regionService"
 import { useQueryClient } from "@tanstack/react-query"
+import Page from '@smpm/components/pageTitle';
 
 const Region = () => {
 	const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -25,7 +25,7 @@ const Region = () => {
 			message.success('Region created successfully');
 			setIsCreateModalVisible(false);
 			form.resetFields();
-			queryClient.invalidateQueries(["region"]);
+			queryClient.invalidateQueries({ queryKey: ["region"] });
 		} catch (error) {
 			console.error('Error creating region:', error);
 			message.error('Failed to create region');

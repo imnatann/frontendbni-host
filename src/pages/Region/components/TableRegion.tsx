@@ -2,13 +2,14 @@
 import React, { useMemo, useState } from 'react';
 import DataTable from "@smpm/components/DataTable"
 import { IRegionModel } from "@smpm/models/regionModel"
-import { getRegion, updateRegion, deleteRegion } from "@smpm/services/regionService"
+import { getRegion, updateRegion, deleteRegion, IRegionUpdateRequest } from "@smpm/services/regionService"
 import { useDebounce } from "@smpm/utils/useDebounce"
 import useTableHelper from "@smpm/utils/useTableHelper"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button, Space, Popconfirm, message, Modal, Form, Input } from 'antd'
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { ColumnsType } from "antd/es/table"
+import { CheckboxValueType } from 'antd/es/checkbox/Group';
 
 const TableRegion: React.FC = () => {
   const { tableFilter, onChangeTable, onChangeSearchBy } = useTableHelper<IRegionModel>()
@@ -21,41 +22,54 @@ const TableRegion: React.FC = () => {
 
   const onSearch = (value: string) => setSearch(value)
 
-  const {
-    data: regions,
-    isLoading,
-    refetch
-  } = useQuery({
-    queryKey: ["region", { ...tableFilter, searchValue }],
-    queryFn: () =>
-      getRegion({
-        order: tableFilter.sort.order,
-        order_by: tableFilter.sort.order_by,
-        search: searchValue,
-        search_by: tableFilter.searchBy,
-        page: parseInt(tableFilter.pagination.current),
-        take: parseInt(tableFilter.pagination.pageSize),
-      }),
-  })
 
-  const updateMutation = useMutation({
-    mutationFn: (values: Partial<IRegionModel>) => updateRegion(editingRegion!.id, values),
-    onSuccess: () => {
-      message.success('Region updated successfully');
-      setIsEditModalVisible(false);
-      queryClient.invalidateQueries(["region"]);
-    },
-    onError: (error) => {
-      console.error('Error updating region:', error);
-      message.error('Failed to update region');
-    },
-  });
+  const {  
+    data: regions,  
+    isLoading,  
+    refetch  
+  } = useQuery({  
+    queryKey: ["region", { ...tableFilter, searchValue }],  
+    queryFn: () =>  
+      getRegion({  
+        order: tableFilter.sort.order,  
+        order_by: tableFilter.sort.order_by,  
+        search: searchValue,  
+        search_by: tableFilter.searchBy,  
+        page: tableFilter.pagination.current ?? 1,  
+        take: tableFilter.pagination.pageSize ?? 10,  
+      }),  
+  })  
+  
+
+  
+const updateMutation = useMutation({
+  mutationFn: (values: Partial<IRegionModel>) => {
+     const updateData: IRegionUpdateRequest = {
+      name: values.name ?? '',
+      code: values.code ?? '',
+      description: values.description ?? undefined,
+    };
+    return updateRegion(editingRegion!.id, updateData);
+  },
+  onSuccess: () => {
+    message.success('Region updated successfully');
+    setIsEditModalVisible(false);
+    queryClient.invalidateQueries({ queryKey: ["region"] });
+    refetch();
+  },
+  onError: (error) => {
+    console.error('Error updating region:', error);
+    message.error('Failed to update region');
+  },
+});
+
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteRegion(id),
     onSuccess: () => {
       message.success('Region deleted successfully');
-      queryClient.invalidateQueries(["region"]);
+      queryClient.invalidateQueries({ queryKey: ["region"] });
+      refetch();
     },
     onError: (error) => {
       console.error('Error deleting region:', error);
@@ -133,27 +147,31 @@ const TableRegion: React.FC = () => {
 
   return (
     <>
-      <DataTable<IRegionModel>
-        dataSource={regions?.result.data}
-        pagination={{
-          current: regions?.result.meta.page,
-          pageSize: regions?.result.meta.take,
-          total: regions?.result.meta.item_count,
-        }}
-        loading={isLoading}
-        bordered
-        onChangeSearchBy={onChangeSearchBy}
-        onGlobalSearch={onSearch}
-        columns={columns}
-        useGlobalSearchInput
-        onChange={onChangeTable}
-      />
+        <DataTable<IRegionModel>  
+        dataSource={regions?.result.data}  
+        pagination={{  
+          current: regions?.result.meta.page ?? 1,  
+          pageSize: regions?.result.meta.take ?? 10,  
+          total: regions?.result.meta.item_count ?? 0,  
+        }}  
+        loading={isLoading}  
+        bordered  
+        onChangeSearchBy={(value: CheckboxValueType[]) => {  
+          const stringValues = value.map(v => v.toString());  
+          onChangeSearchBy(stringValues);  
+        }}  
+        onGlobalSearch={onSearch}  
+        columns={columns}  
+        useGlobalSearchInput  
+        onChange={onChangeTable}  
+      />  
+
       <Modal
         title="Edit Region"
         visible={isEditModalVisible}
         onOk={handleEditModalOk}
         onCancel={handleEditModalCancel}
-        confirmLoading={updateMutation.isLoading}
+        confirmLoading={updateMutation.isPending}
       >
         <Form form={form} layout="vertical">
           <Form.Item
