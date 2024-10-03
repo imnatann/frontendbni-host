@@ -57,7 +57,7 @@ const items: MenuItem[] = [
     [  
       getItem("Open Job Order", "job-order/open"),  
       getItem("Activity Job Order", "job-order/activity"),  
-      getItem("Results  ", "job-order/"),  
+      getItem("Results  ", "job-order/results"),  
     ]  
   ),  
   getItem("Merchant", "merchant", <IconBuildingStore size="1.2rem" />, [  
