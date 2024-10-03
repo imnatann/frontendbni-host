@@ -57,6 +57,7 @@ const items: MenuItem[] = [
     [  
       getItem("Open Job Order", "job-order/open"),  
       getItem("Activity Job Order", "job-order/activity"),  
+      getItem("Results  ", "job-order/"),  
     ]  
   ),  
   getItem("Merchant", "merchant", <IconBuildingStore size="1.2rem" />, [  
@@ -71,7 +72,10 @@ const items: MenuItem[] = [
     getItem("Receive Out", "inventory/receive-out"),  
   ]),  
   getItem("Report", "report", <IconReportAnalytics size="1.2rem" />),  
-  getItem("Document", "document", <IconFile size="1.2rem" />),  
+  getItem("Document", "document", <IconFile size="1.2rem" />, [  
+    getItem("Merchant", "document/"),  
+    getItem("Vendor", "document/"),  
+  ]),     
   getItem("Payment", "payment", <IconCurrencyDollar size="1.2rem" />),  
   getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),  
 ];  
