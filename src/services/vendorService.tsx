@@ -31,14 +31,10 @@ export const updateVendor = async (
   } catch (error: any) {
     console.error('Error in updateVendor:', error);
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       throw new Error(error.response.data.message || 'Server responded with an error');
     } else if (error.request) {
-      // The request was made but no response was received
       throw new Error('No response received from server');
     } else {
-      // Something happened in setting up the request that triggered an Error
       throw new Error('Error setting up the request');
     }
   }
@@ -65,5 +61,23 @@ export const createVendor = async (
   } catch (error) {
     console.error('Error in createVendor:', error);
     throw error;
+  }
+};
+
+export const deleteVendor = async (
+  id: number
+): Promise<IBaseResponseService<void>> => {
+  try {
+    const response = await axios.delete(`/vendor/${id}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error in deleteVendor:', error);
+    if (error.response) {
+      throw new Error(error.response.data.message || 'Server responded with an error');
+    } else if (error.request) {
+      throw new Error('No response received from server');
+    } else {
+      throw new Error('Error setting up the request');
+    }
   }
 };

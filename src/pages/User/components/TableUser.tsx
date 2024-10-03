@@ -1,6 +1,7 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DataTable from "@smpm/components/DataTable"
 import { IUserModel, userSearchColumn } from "@smpm/models/userModel"
 import { IRoleModel } from "@smpm/models/roleModel"
@@ -28,14 +29,11 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const { onChangeTable, onChangeSearchBy } = useTableHelper<IUserModel>()
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState<string>("")
   const debouncedSearch = useDebounce(search, 500)
 
-  const [user, setUser] = useState<IPaginationResponse<IUserModel> | null>(null);
-  const [roles, setRoles] = useState<IRoleModel[]>([]);
-  const [vendors, setVendors] = useState<IVendorModel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<IUserModel | null>(null);
   const [pagination, setPagination] = useState<IPaginationRequest>({
@@ -46,60 +44,85 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
     order_by: 'id'
   });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoading(true);
-      try {
-        const response: IBaseResponseService<IPaginationResponse<IUserModel>> = await getUser({
-          ...pagination,
-          search: debouncedSearch,
-        });
-        setUser(response.result);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        message.error('Failed to fetch users');
-      } finally {
-        setIsLoading(false);
+  const { data: userData, isLoading } = useQuery<IBaseResponseService<IPaginationResponse<IUserModel>>>({
+    queryKey: ['users', pagination, debouncedSearch],
+    queryFn: () => getUser({ ...pagination, search: debouncedSearch }),
+  });
+
+  const { data: rolesData } = useQuery<IBaseResponseService<IPaginationResponse<IRoleModel>>>({
+    queryKey: ['roles'],
+    queryFn: () => getRole({ page: 1, take: 100, order: 'asc', order_by: 'name' }),
+  });
+
+  const { data: vendorsData } = useQuery<IBaseResponseService<IPaginationResponse<IVendorModel>>>({
+    queryKey: ['vendors'],
+    queryFn: () => getVendor({ page: 1, take: 100, order: 'asc', order_by: 'name' }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: () => {
+      message.success('User deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error) => {
+      console.error('Error deleting user:', error);
+      message.error('Failed to delete user');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: number; userData: Partial<IUserModel> }) => 
+      updateUser(data.id, data.userData),
+    onSuccess: () => {
+      message.success('User updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsEditModalVisible(false);
+      form.resetFields();
+    },
+    onError: (error: any) => {
+      console.error('Error updating user:', error);
+      if (error.response?.data?.result?.errors) {
+        const errors = error.response.data.result.errors;
+        for (const key in errors) {
+          form.setFields([
+            {
+              name: key,
+              errors: Array.isArray(errors[key]) ? errors[key] : [errors[key]],
+            },
+          ]);
+        }
+      } else {
+        message.error('Failed to update user');
       }
-    };
+    },
+  });
 
-    fetchUser();
-  }, [debouncedSearch, pagination]);
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response: IBaseResponseService<IPaginationResponse<IRoleModel>> = await getRole({
-          page: 1,
-          take: 100,
-          order: 'asc',
-          order_by: 'name'
-        });
-        setRoles(response.result.data);
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-        message.error('Failed to fetch roles');
+  const createMutation = useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      message.success('User created successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsAddModalVisible(false);
+      form.resetFields();
+    },
+    onError: (error: any) => {
+      console.error('Error creating user:', error);
+      if (error.response?.data?.result?.errors) {
+        const errors = error.response.data.result.errors;
+        for (const key in errors) {
+          form.setFields([
+            {
+              name: key,
+              errors: Array.isArray(errors[key]) ? errors[key] : [errors[key]],
+            },
+          ]);
+        }
+      } else {
+        message.error('Failed to create user');
       }
-    };
-
-    const fetchVendors = async () => {
-      try {
-        const response: IBaseResponseService<IPaginationResponse<IVendorModel>> = await getVendor({
-          page: 1,
-          take: 100,
-          order: 'asc',
-          order_by: 'name'
-        });
-        setVendors(response.result.data);
-      } catch (error) {
-        console.error('Error fetching vendors:', error);
-        message.error('Failed to fetch vendors');
-      }
-    };
-
-    fetchRoles();
-    fetchVendors();
-  }, []);
+    },
+  });
 
   const onSearch = (value: string) => setSearch(value)
 
@@ -115,15 +138,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
   };
 
   const handleDelete = async (record: IUserModel) => {
-    try {
-      await deleteUser(record.id);
-      message.success('User deleted successfully');
-      const updatedResponse = await getUser(pagination);
-      setUser(updatedResponse.result);
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      message.error('Failed to delete user');
-    }
+    deleteMutation.mutate(record.id);
   };
 
   const handleModalOk = async () => {
@@ -135,33 +150,12 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
       };
 
       if (editingUser) {
-        await updateUser(editingUser.id, updatedValues);
-        message.success('User updated successfully');
+        updateMutation.mutate({ id: editingUser.id, userData: updatedValues });
       } else {
-        await createUser(updatedValues);
-        message.success('User created successfully');
+        createMutation.mutate(updatedValues);
       }
-
-      setIsEditModalVisible(false);
-      setIsAddModalVisible(false);
-      form.resetFields();
-      const updatedResponse = await getUser(pagination);
-      setUser(updatedResponse.result);
     } catch (error) {
-      console.error('Error updating/creating user:', error);
-      if (error.response && error.response.data && error.response.data.result && error.response.data.result.errors) {
-        const errors = error.response.data.result.errors;
-        for (const key in errors) {
-          form.setFields([
-            {
-              name: key,
-              errors: Array.isArray(errors[key]) ? errors[key] : [errors[key]],
-            },
-          ]);
-        }
-      } else {
-        message.error('Failed to update/create user');
-      }
+      console.error('Validation failed:', error);
     }
   };
 
@@ -189,7 +183,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
         title: "ROLE",
         dataIndex: "role_id",
         render: (role_id: number) => {
-          const role = roles.find(r => r.id === role_id);
+          const role = rolesData?.result.data.find(r => r.id === role_id);
           return role ? <Tag color="blue">{role.name}</Tag> : '-';
         },
       },
@@ -199,7 +193,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
         sorter: true,
         sortDirections: ["descend", "ascend"],
         render: (vendor_id: number) => {
-          const vendor = vendors.find(v => v.id === vendor_id);
+          const vendor = vendorsData?.result.data.find(v => v.id === vendor_id);
           return vendor ? vendor.name : '-';
         },
       },
@@ -246,7 +240,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
         ),
       },
     ]
-  }, [roles, vendors])
+  }, [rolesData, vendorsData])
 
   const handleChangeSearchBy = (value: CheckboxValueType[]) => {
     onChangeSearchBy(value as string[]);
@@ -269,11 +263,11 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
   return (
     <>
       <DataTable<IUserModel>
-        dataSource={user?.data}
+        dataSource={userData?.result.data}
         pagination={{
-          current: user?.meta.page,
-          pageSize: user?.meta.take,
-          total: user?.meta.item_count,
+          current: userData?.result.meta.page,
+          pageSize: userData?.result.meta.take,
+          total: userData?.result.meta.item_count,
         }}
         loading={isLoading}
         bordered
@@ -297,7 +291,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
             rules={[{ required: true, message: 'Please select a vendor!' }]}
           >
             <Select>
-              {vendors.map(vendor => (
+              {vendorsData?.result.data.map(vendor => (
                 <Option key={vendor.id} value={vendor.id}>{vendor.name}</Option>
               ))}
             </Select>
@@ -325,7 +319,7 @@ const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalV
             rules={[{ required: true, message: 'Please select a role!' }]}
           >
             <Select>
-              {roles.map(role => (
+              {rolesData?.result.data.map(role => (
                 <Option key={role.id} value={role.id}>{role.name}</Option>
               ))}
             </Select>

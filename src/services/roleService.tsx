@@ -30,3 +30,10 @@ export const createRole = async (
   const response = await axios.post("/role", roleData);
   return response.data;
 };
+
+export const deleteRole = async (
+  id: number
+): Promise<IBaseResponseService<void>> => {
+  const response = await axios.delete(`/role/${id}`);
+  return response.data;
+};

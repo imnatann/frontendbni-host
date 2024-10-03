@@ -12,12 +12,14 @@ import { IconUsersGroup } from "@tabler/icons-react"
 import { Breadcrumb, Button, Card, Space, Modal, Form, Input, message, Select } from "antd"
 import TableRole from "./components/TableRole"
 import { createRole } from "@smpm/services/roleService"
+import { useQueryClient } from '@tanstack/react-query';
 
 const { Option } = Select;
 
 const Role: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -32,11 +34,12 @@ const Role: React.FC = () => {
     try {
       const values = await form.validateFields();
       const response = await createRole(values);
-      if (response.status === 'success') {
+      if (response.status && response.result) {
         message.success('Role created successfully');
         setIsModalVisible(false);
         form.resetFields();
-        // You might want to refresh the TableRole here
+        // Refetch the roles data
+        queryClient.invalidateQueries({ queryKey: ['roles'] });
       } else {
         throw new Error(response.message || 'Creation failed');
       }
@@ -96,7 +99,7 @@ const Role: React.FC = () => {
       </PageContent>
       <Modal
         title="Buat Role Baru"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleCreate}
         onCancel={handleCancel}
       >
