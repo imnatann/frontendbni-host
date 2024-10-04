@@ -109,6 +109,10 @@ export const routes: RouteObject[] = [
 						Component: lazy(() => import("@smpm/pages/ActivityJobOrder/Index")),
 					},
 					{
+						path: "results",
+						Component: lazy(() => import("@smpm/pages/Results/Index")),
+					},
+					{
 						path: "activity/:no_jo",
 						Component: lazy(() => import("@smpm/pages/JobOrderActivity")),
 					},

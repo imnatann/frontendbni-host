@@ -11,6 +11,7 @@ export interface IBaseResponseService<T = any | IErrorResponseService> {
 	status: IStatusCode
 	message?: string;
 	result: T
+	message?: string
 }
 
 export interface IErrorResponseService {

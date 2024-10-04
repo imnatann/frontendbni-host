@@ -1,5 +1,6 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DataTable from "@smpm/components/DataTable"
 import { IVendorModel } from "@smpm/models/vendorModel"
 import { useDebounce } from "@smpm/utils/useDebounce"
@@ -8,7 +9,7 @@ import { ColumnsType } from "antd/es/table"
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { Button, Space, Popconfirm, message, Modal, Form, Input } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getVendor, updateVendor} from '@smpm/services/vendorService';
+import { getVendor, updateVendor, deleteVendor } from '@smpm/services/vendorService';
 import { IPaginationRequest, IPaginationResponse, IBaseResponseService } from "@smpm/models";
 
 interface TableVendorProps {
@@ -19,12 +20,11 @@ interface TableVendorProps {
 const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
   const { onChangeTable, onChangeSearchBy } = useTableHelper<IVendorModel>()
   const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState<string>("")
   const debouncedSearch = useDebounce(search, 500)
 
-  const [vendor, setVendor] = useState<IPaginationResponse<IVendorModel> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingVendor, setEditingVendor] = useState<IVendorModel | null>(null);
   const [pagination, setPagination] = useState<IPaginationRequest>({
@@ -35,32 +35,60 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
     order_by: 'name'
   });
 
-  const fetchVendor = async () => {
-    setIsLoading(true);
-    try {
-      const response: IBaseResponseService<IPaginationResponse<IVendorModel>> = await getVendor({
-        ...pagination,
-        search: debouncedSearch,
-      });
-      setVendor(response.result);
-    } catch (error) {
-      console.error('Error fetching vendors:', error);
-      message.error('Failed to fetch vendors');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: vendorData, isLoading, refetch } = useQuery<IBaseResponseService<IPaginationResponse<IVendorModel>>>({
+    queryKey: ['vendors', pagination, debouncedSearch],
+    queryFn: () => getVendor({
+      ...pagination,
+      search: debouncedSearch,
+    }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  useEffect(() => {
-    fetchVendor();
-  }, [debouncedSearch, pagination]);
+  const updateVendorMutation = useMutation({
+    mutationFn: (updatedVendor: Partial<IVendorModel>) => {
+      const { id, ...updateData } = updatedVendor;
+      return updateVendor(id!, updateData);
+    },
+    onSuccess: (data) => {
+      if (data.status && data.result) {
+        message.success('Vendor updated successfully');
+        setIsEditModalVisible(false);
+        queryClient.invalidateQueries({ queryKey: ['vendors'] });
+        refetch();
+        refreshData();
+      } else {
+        throw new Error('Update failed');
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to update vendor:', error);
+      message.error(`Failed to update vendor: ${error.message}`);
+    },
+  });
+
+  const deleteVendorMutation = useMutation({
+    mutationFn: (id: number) => deleteVendor(id),
+    onSuccess: (data) => {
+      if (data.status) {
+        message.success('Vendor deleted successfully');
+        queryClient.invalidateQueries({ queryKey: ['vendors'] });
+        refetch();
+        refreshData();
+      } else {
+        throw new Error('Delete failed');
+      }
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete vendor:', error);
+      message.error(`Failed to delete vendor: ${error.message}`);
+    },
+  });
 
   const onSearch = (value: string) => setSearch(value)
 
   const handleEdit = (record: IVendorModel) => {
     setEditingVendor(record);
     form.setFieldsValue({
-      id: record.id,
       name: record.name,
       code: record.code,
       description: record.description,
@@ -72,7 +100,7 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
     try {
       const values = await form.validateFields();
       if (editingVendor) {
-        const response = await updateVendor(editingVendor.id, values);
+         const response = await updateVendor(editingVendor.id, values);
         if (response && response.result) {
           message.success('Vendor updated successfully');
           setIsEditModalVisible(false);
@@ -81,14 +109,10 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
         } else {
           throw new Error('Update failed');
         }
-      }
+         updateVendorMutation.mutate({ ...values, id: editingVendor.id });
+       }
     } catch (error) {
-      console.error('Failed to update vendor:', error);
-      if (error instanceof Error) {
-        message.error(`Failed to update vendor: ${error.message}`);
-      } else {
-        message.error('An unexpected error occurred while updating the vendor');
-      }
+      console.error('Validation failed:', error);
     }
   };
 
@@ -99,8 +123,11 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
   };
 
   const handleDelete = async (record: IVendorModel) => {
-    console.log('Delete vendor:', record);
-    // Implement delete logic here
+    try {
+      await deleteVendorMutation.mutateAsync(record.id);
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
   };
 
   const columns: ColumnsType<IVendorModel> = useMemo((): ColumnsType<IVendorModel> => {
@@ -171,11 +198,11 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
   return (
     <>
       <DataTable<IVendorModel>
-        dataSource={vendor?.data}
+        dataSource={vendorData?.result.data}
         pagination={{
-          current: vendor?.meta.page,
-          pageSize: vendor?.meta.take,
-          total: vendor?.meta.item_count,
+          current: vendorData?.result.meta.page,
+          pageSize: vendorData?.result.meta.take,
+          total: vendorData?.result.meta.item_count,
         }}
         loading={isLoading}
         bordered
@@ -187,7 +214,7 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
       />
       <Modal
         title="Edit Vendor"
-        visible={isEditModalVisible}
+        open={isEditModalVisible}
         onOk={handleEditModalOk}
         onCancel={handleEditModalCancel}
         width={600}

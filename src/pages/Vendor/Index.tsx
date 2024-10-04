@@ -12,11 +12,13 @@ import { IconBuildingStore } from "@tabler/icons-react"
 import { Breadcrumb, Button, Card, Space, Modal, Form, Input, message } from "antd"
 import TableVendor from "./components/TableVendor"
 import { createVendor } from '@smpm/services/vendorService';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Vendor: React.FC = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [refreshKey, setRefreshKey] = useState(0);
+  const queryClient = useQueryClient();
 
   const showAddModal = () => {
     setIsAddModalVisible(true);
@@ -26,12 +28,13 @@ const Vendor: React.FC = () => {
     try {
       const values = await form.validateFields();
       const response = await createVendor(values);
-      if (response && response.result) {
+      if (response.status && response.result) {
         message.success('Vendor added successfully');
         setIsAddModalVisible(false);
         form.resetFields();
         setRefreshKey(prevKey => prevKey + 1); 
-      } else {
+        queryClient.invalidateQueries({ queryKey: ['vendors'] }); 
+       } else {
         throw new Error(response.message || 'Failed to add vendor');
       }
     } catch (error) {
@@ -47,7 +50,8 @@ const Vendor: React.FC = () => {
 
   const refreshData = useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
-  }, []);
+    queryClient.invalidateQueries({ queryKey: ['vendors'] }); // Invalidate and refetch vendors query
+  }, [queryClient]);
 
   return (
     <Page title="Vendor">
@@ -95,7 +99,7 @@ const Vendor: React.FC = () => {
       </PageContent>
       <Modal
         title="Add New Vendor"
-        visible={isAddModalVisible}
+        open={isAddModalVisible}
         onOk={handleAddModalOk}
         onCancel={handleAddModalCancel}
         width={600}

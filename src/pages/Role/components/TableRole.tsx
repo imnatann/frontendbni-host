@@ -1,10 +1,11 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DataTable from "@smpm/components/DataTable"
 import { IRoleModel } from "@smpm/models/roleModel"
 import { useDebounce } from "@smpm/utils/useDebounce"
 import useTableHelper from "@smpm/utils/useTableHelper"
-import { getRole, updateRole } from "@smpm/services/roleService"
+import { getRole, updateRole, deleteRole } from "@smpm/services/roleService"
 import { ColumnsType } from "antd/es/table"
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { Button, Space, Popconfirm, message, Modal, Form, Input, Select } from 'antd';
@@ -16,12 +17,11 @@ const { Option } = Select;
 const TableRole: React.FC = () => {
   const [form] = Form.useForm();
   const { onChangeTable, onChangeSearchBy } = useTableHelper<IRoleModel>()
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState<string>("")
   const debouncedSearch = useDebounce(search, 500)
 
-  const [roles, setRoles] = useState<IPaginationResponse<IRoleModel> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRole, setEditingRole] = useState<IRoleModel | null>(null);
   const [pagination, setPagination] = useState<IPaginationRequest>({
@@ -32,25 +32,41 @@ const TableRole: React.FC = () => {
     order_by: 'name'
   });
 
-  const fetchRoles = async () => {
-    setIsLoading(true);
-    try {
-      const response: IBaseResponseService<IPaginationResponse<IRoleModel>> = await getRole({
-        ...pagination,
-        search: debouncedSearch,
-      });
-      setRoles(response.result);
-    } catch (error) {
-      console.error('Error fetching roles:', error);
-      message.error('Failed to fetch roles');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: rolesData, isLoading, refetch } = useQuery<IBaseResponseService<IPaginationResponse<IRoleModel>>>({
+    queryKey: ['roles', pagination, debouncedSearch],
+    queryFn: () => getRole({
+      ...pagination,
+      search: debouncedSearch,
+    }),
+  });
 
-  useEffect(() => {
-    fetchRoles();
-  }, [debouncedSearch, pagination]);
+  const updateRoleMutation = useMutation({
+    mutationFn: (updatedRole: { id: number; data: Partial<IRoleModel> }) => 
+      updateRole(updatedRole.id, updatedRole.data),
+    onSuccess: () => {
+      message.success('Role updated successfully');
+      setIsModalVisible(false);
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      refetch();
+    },
+    onError: (error: any) => {
+      console.error('Failed to update role:', error);
+      message.error(`Failed to update role: ${error.message}`);
+    },
+  });
+
+  const deleteRoleMutation = useMutation({
+    mutationFn: deleteRole,
+    onSuccess: () => {
+      message.success('Role deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      refetch();
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete role:', error);
+      message.error(`Failed to delete role: ${error.message}`);
+    },
+  });
 
   const onSearch = (value: string) => setSearch(value)
 
@@ -60,12 +76,11 @@ const TableRole: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (record: IRoleModel) => {
-    console.log('Delete role:', record);
-    // Implement delete logic here
+  const handleDelete = (id: number) => {
+    deleteRoleMutation.mutate(id);
   };
 
-  const handleModalOk = async () => {  
+   const handleModalOk = async () => {  
     try {  
       const values = await form.validateFields();  
       if (editingRole) {  
@@ -89,6 +104,7 @@ const TableRole: React.FC = () => {
       }  
     }  
   };  
+ 
   const handleModalCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
@@ -129,7 +145,7 @@ const TableRole: React.FC = () => {
             <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
             <Popconfirm
               title="Are you sure to delete this role?"
-              onConfirm={() => handleDelete(record)}
+              onConfirm={() => handleDelete(record.id)}
               okText="Yes"
               cancelText="No"
             >
@@ -159,11 +175,11 @@ const TableRole: React.FC = () => {
   return (
     <>
       <DataTable<IRoleModel>
-        dataSource={roles?.data}
+        dataSource={rolesData?.result.data}
         pagination={{
-          current: roles?.meta.page,
-          pageSize: roles?.meta.take,
-          total: roles?.meta.item_count,
+          current: rolesData?.result.meta.page,
+          pageSize: rolesData?.result.meta.take,
+          total: rolesData?.result.meta.item_count,
         }}
         loading={isLoading}
         bordered
@@ -175,7 +191,7 @@ const TableRole: React.FC = () => {
       />
       <Modal
         title="Edit Role"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
       >
