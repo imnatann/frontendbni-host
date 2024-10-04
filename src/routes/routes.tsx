@@ -13,6 +13,7 @@ export const User = lazy(() => import("@smpm/pages/User/Index"))
 export const Vendor = lazy(() => import("@smpm/pages/Vendor/Index"))
 export const Maintenance = lazy(() => import("@smpm/pages/maintenance/Index"))
 export const UserEdit = lazy(() => import("@smpm/pages/User/Edit"))
+export const AuditTrail = lazy(() => import("@smpm/pages/Audit"))
 
 export const routes: RouteObject[] = [
 	{
@@ -78,6 +79,10 @@ export const routes: RouteObject[] = [
 			// 	path: 'dashboard',
 			// 	element: <Dashboard />
 			// },
+			{
+				path: 'auditTrail',
+				element: <AuditTrail />
+			},
 			{
 				path: "menu-management",
 				children: [

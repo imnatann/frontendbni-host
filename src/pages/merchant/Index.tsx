@@ -4,8 +4,6 @@ import {
   VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import PageContent from "@smpm/components/PageContent";
-import PageLabel from "@smpm/components/PageLabel";
-import Page from "@smpm/components/PageTitle";
 import { IconBuildingStore } from "@tabler/icons-react";
 import {
   Breadcrumb,
@@ -17,11 +15,13 @@ import {
   Space,
   Typography,
 } from "antd";
-import TableView from "./components/TableView";
 import { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-const { Title } = Typography;
+import Page from "@smpm/components/pageTitle";
+import PageLabel from "@smpm/components/pageLabel";
+import TableView from "./components/TableView";
+ const { Title } = Typography;
 
 const Region = () => {
   const [ReportModalVisible, setReportModalVisible] = useState(false);

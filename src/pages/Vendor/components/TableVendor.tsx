@@ -100,8 +100,17 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
     try {
       const values = await form.validateFields();
       if (editingVendor) {
-        updateVendorMutation.mutate({ ...values, id: editingVendor.id });
-      }
+         const response = await updateVendor(editingVendor.id, values);
+        if (response && response.result) {
+          message.success('Vendor updated successfully');
+          setIsEditModalVisible(false);
+          fetchVendor();
+          refreshData(); 
+        } else {
+          throw new Error('Update failed');
+        }
+         updateVendorMutation.mutate({ ...values, id: editingVendor.id });
+       }
     } catch (error) {
       console.error('Validation failed:', error);
     }

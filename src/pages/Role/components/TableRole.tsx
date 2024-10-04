@@ -80,19 +80,31 @@ const TableRole: React.FC = () => {
     deleteRoleMutation.mutate(id);
   };
 
-  const handleModalOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (editingRole) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars  
-        const { id: _, ...updateData } = values;
-        updateRoleMutation.mutate({ id: editingRole.id, data: updateData });
-      }
-    } catch (error) {
-      console.error('Validation failed:', error);
-    }
-  };
-
+   const handleModalOk = async () => {  
+    try {  
+      const values = await form.validateFields();  
+      if (editingRole) {  
+        const { id, ...updateData } = values;  
+        const response = await updateRole(editingRole.id, updateData);  
+        
+         if (response && response.result) {  
+          message.success('Role updated successfully');  
+          setIsModalVisible(false);  
+          fetchRoles();  
+        } else {  
+           throw new Error(response.message || 'Update failed: Unexpected response format');  
+        }  
+      }  
+    } catch (error) {  
+      console.error('Failed to update role:', error);  
+      if (error instanceof Error) {  
+        message.error(`Failed to update role: ${error.message}`);  
+      } else {  
+        message.error('An unexpected error occurred while updating the role');  
+      }  
+    }  
+  };  
+ 
   const handleModalCancel = () => {
     setIsModalVisible(false);
     form.resetFields();

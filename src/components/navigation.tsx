@@ -9,7 +9,8 @@ import {
   IconUsersGroup,  
   IconFile,  
   IconCurrencyDollar,  
-  IconCheckbox,  
+  IconCheckbox,
+  IconHistory,  
 } from "@tabler/icons-react";  
 import { Layout, Menu, MenuProps } from "antd";  
 import React, { useMemo, useState, useEffect } from "react";  
@@ -78,6 +79,7 @@ const items: MenuItem[] = [
   ]),     
   getItem("Payment", "payment", <IconCurrencyDollar size="1.2rem" />),  
   getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),  
+  getItem("Audit", "auditTrail", <IconHistory size="1.2rem" />),  
 ];  
 
 const rootSubmenuKeys = ["sub1", "sub2", "sub4"];  
