@@ -1,4 +1,4 @@
-import { Card, DatePicker, Flex, Select, Space, Typography } from "antd";
+import { Card, DatePicker, Flex, Select, Space, Tag, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
 import DataTable, {
   getColumnFilter,
@@ -223,6 +223,17 @@ function PreventiveMaintenance() {
         return row || "-";
       },
     },
+    {  
+      title: "Status",  
+      dataIndex: "status",  
+      sorter: true,  
+      sortDirections: ["descend", "ascend"],  
+      render: (status: "Approve" | "Reject") => (  
+        <Tag color={status === "Approve" ? "green" : "red"}>  
+          {status}  
+        </Tag>  
+      ),  
+    },  
   ];
   return (
     <>

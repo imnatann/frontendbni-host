@@ -125,7 +125,7 @@ const Results = () => {
   return (
     <Page title="Results">
       <PageLabel
-        title={<span className="font-semibold text-2xl">Results</span>}
+        title={<span className="font-semibold text-2xl">Results Job Order</span>}
         subtitle={
           <Breadcrumb
             items={[
@@ -142,7 +142,7 @@ const Results = () => {
                 title: (
                   <div className="flex gap-1">
                     <IconSortDescendingNumbers size="1rem" />
-                    <span>Results</span>
+                    <span>Results Job Order</span>
                   </div>
                 ),
               },

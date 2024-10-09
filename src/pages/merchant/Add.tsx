@@ -23,7 +23,11 @@ const Add = () => {
 
   const onFinish = (data: TFormFieldMerchant) => {
     addMutation.mutate(
-      { ...data, region_id: data.region_id?.id, mid: +data.mid },
+      {  
+        ...data,  
+        region_id: data.region_id.id,  
+        mid: +data.mid,  
+      },  
       {
         onSuccess: () => {
           api.success({

@@ -11,7 +11,7 @@ interface IFormFieldMerchant {
 
 export type TFormFieldMerchant = {
   id?: number;
-  region_id: number;
+  region_id: { id: number };
   mid: number;
   name: string;
   category: string;
@@ -52,7 +52,7 @@ const FormFieldMerchant: React.FC<IFormFieldMerchant> = ({ initialValues }) => {
         <Col xs={24} md={8}>
           <Form.Item
             label={"Region"}
-            name={["region_id"]}
+            name={["region_id", "id"]}
             rules={[
               {
                 required: true,

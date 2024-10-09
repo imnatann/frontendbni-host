@@ -80,8 +80,17 @@ export const routes: RouteObject[] = [
 			// 	element: <Dashboard />
 			// },
 			{
-				path: 'auditTrail',
-				element: <AuditTrail />
+				path: "Audit",
+				children: [
+					{
+						path: "authlogs",
+						Component: lazy(() => import("@smpm/pages/AuthenticationLogs/Index")),
+					},
+					{
+						path: "syslogs",
+						Component: lazy(() => import("@smpm/pages/SystemLogs/Index")),
+					},
+				],
 			},
 			{
 				path: "menu-management",
@@ -140,6 +149,19 @@ export const routes: RouteObject[] = [
 					{  
 						path: "maintenance-merchant",  
 						element: <Maintenance />,  
+					},
+				],
+			},
+			{
+				path: "Document",
+				children: [
+					{
+						path: "DocMerchant",
+						Component: lazy(() => import("@smpm/pages/DocMerchant/Index")),
+					},
+					{
+						path: "DocVendor",
+						Component: lazy(() => import("@smpm/pages/DocVendor/index")),
 					},
 				],
 			},

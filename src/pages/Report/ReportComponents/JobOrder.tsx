@@ -1,380 +1,356 @@
-import { Button, DatePicker, Flex, Space, Typography } from "antd";
-import { ColumnsType } from "antd/es/table";
-import DataTable from "@smpm/components/DataTable";
-import useTableHelper from "@smpm/utils/useTableHelper";
-import FilterTable, { TOptions } from "./FilterTable";
-import { useMemo, useState } from "react";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
-import ReportPDF from "./ReportPDF";
-import { saveAs } from "file-saver";
-import dayjs from "dayjs";
+import DataTable from "@smpm/components/DataTable";  
+import { useDebounce } from "@smpm/utils/useDebounce";  
+import useTableHelper from "@smpm/utils/useTableHelper";  
+import { useQuery } from "@tanstack/react-query";  
+import { Badge, Button, DatePicker, Flex, Space, Tag, Typography } from "antd";  
+import { ColumnsType } from "antd/es/table";  
+import * as dayjs from "dayjs";  
+import { useMemo, useState, useEffect } from "react";  
+import FilterTable, { TOptions } from "./FilterTable";  
+import ReportPDF from "./ReportPDF";  
+import { pdf } from "@react-pdf/renderer";  
+import saveAs from "file-saver";  
+import { IJobOrderReportModel } from "@smpm/models/jobOrderModel";  
+import { getJobOrderReports } from "@smpm/services/jobOrderService";  
+import { getDataMerchant } from "@smpm/services/merchantService";  
+import { getVendor } from "@smpm/services/vendorService";  
+import { getAllRegion } from "@smpm/services/regionService";  
+import { IPaginationRequest } from "@smpm/models";  
 
-interface DataType {
-  key: string;
-  no_jo: string;
-  jenis_jo: string;
-  tanggal_jo: string;
-  mid: string;
-  tid: string;
-  nama_merchant: string;
-  address1: string;
-  address2: string;
-  address3: string;
-  address4: string;
-}
+const { Title } = Typography;  
+const { RangePicker } = DatePicker;  
 
-const data: DataType[] = [
-  {
-    key: "1",
-    no_jo: "EDM07-MI-10112023-IS-SW-0001",
-    jenis_jo: "New Installation",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005302",
-    tid: "07530202",
-    nama_merchant: "ANUGRAH SHOP MBL",
-    address1: "ANUGRAH SHOP MBL",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-  {
-    key: "2",
-    no_jo: "EDM07-MI-10112023-IS-SW-0002",
-    jenis_jo: "CM Replace",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005298",
-    tid: "07530202",
-    nama_merchant: "DUTA IRAMA PALLANGGA",
-    address1: "DUTA IRAMA PALLANGGA",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-  {
-    key: "3",
-    no_jo: "EDM07-MI-10112023-IS-SW-0003",
-    jenis_jo: "CM Re-init",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005302",
-    tid: "07530202",
-    nama_merchant: "ANUGRAH SHOP MBL",
-    address1: "ANUGRAH SHOP MBL",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-  {
-    key: "4",
-    no_jo: "EDM07-MI-10112023-IS-SW-0001",
-    jenis_jo: "New Installation",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005302",
-    tid: "07530202",
-    nama_merchant: "ANUGRAH SHOP MBL",
-    address1: "ANUGRAH SHOP MBL",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-  {
-    key: "5",
-    no_jo: "EDM07-MI-10112023-IS-SW-0002",
-    jenis_jo: "CM Replace",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005298",
-    tid: "07530202",
-    nama_merchant: "DUTA IRAMA PALLANGGA",
-    address1: "DUTA IRAMA PALLANGGA",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-  {
-    key: "6",
-    no_jo: "EDM07-MI-10112023-IS-SW-0003",
-    jenis_jo: "CM Re-init",
-    tanggal_jo: "10-Nov-23",
-    mid: "000100207005302",
-    tid: "07530202",
-    nama_merchant: "ANUGRAH SHOP MBL",
-    address1: "ANUGRAH SHOP MBL",
-    address2: "",
-    address3: "",
-    address4: "",
-  },
-];
+const optionStatus: TOptions[] = [  
+  { label: "All Status", value: "All Status" },  
+  { label: "Tersedia", value: "Tersedia" },  
+  { label: "Terpasang", value: "Terpasang" },  
+  { label: "Rusak", value: "Rusak" },  
+];  
 
-const optionStatus: TOptions[] = [
-  {
-    label: "All Status",
-    value: "All Status",
-  },
-  {
-    label: "Tersedia",
-    value: "Tersedia",
-  },
-  {
-    label: "Terpasang",
-    value: "Terpasang",
-  },
-  {
-    label: "Rusak",
-    value: "Rusak",
-  },
-];
+function JobOrder() {  
+  const { tableFilter, onChangeTable, onChangeSearchBy } = useTableHelper<IJobOrderReportModel>({ pagination: true });  
+  const [search, setSearch] = useState<string>("");  
+  const searchValue = useDebounce(search, 500);  
+ const [selectedStatus, setSelectedStatus] = useState("All Status");  
+  const [selectedWilayah, setSelectedWilayah] = useState("All Wilayah");  
+  const [selectedVendor, setSelectedVendor] = useState("All Vendor");  
+  const [selectedMerchant, setSelectedMerchant] = useState("All Merchant");  
+  const [merchantOptions, setMerchantOptions] = useState<TOptions[]>([{ label: "All Merchant", value: "All Merchant" }]);  
+  const [vendorOptions, setVendorOptions] = useState<TOptions[]>([{ label: "All Vendor", value: "All Vendor" }]);  
+  const [regionOptions, setRegionOptions] = useState<TOptions[]>([{ label: "All Wilayah", value: "All Wilayah" }]);  
 
-const optionWilayah: TOptions[] = [
-  {
-    label: "All Wilayah",
-    value: "All Status",
-  },
-  {
-    label: "Kantor Wilayah 01",
-    value: "W01",
-  },
-  {
-    label: "Kantor Wilayah 02",
-    value: "W02",
-  },
-  {
-    label: "Kantor Wilayah 03",
-    value: "W03",
-  },
-];
+  useEffect(() => {  
+    const fetchOptions = async () => {  
+      try {  
+        const merchantRequest: IPaginationRequest = {  
+          page: 1,  
+          take: 1000,  
+          order: "asc",  
+          order_by: "name",  
+        };  
+        const merchantResponse = await getDataMerchant(merchantRequest);  
+        setMerchantOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...merchantResponse.result.data.map((merchant) => ({  
+            label: merchant.name,  
+            value: merchant.id?.toString(),  
+          })),  
+        ]);  
 
-const optionVendor: TOptions[] = [
-  {
-    label: "All Vendor",
-    value: "All Vendor",
-  },
-  {
-    label: "PT SWADHARMA SARANA INFORMATIKA",
-    value: "BW",
-  },
-  {
-    label: "PT INGENICO INTERNATIONAL INDONESIA",
-    value: "IG",
-  },
-  {
-    label: "PT PRIMA VISTA SOLUSI",
-    value: "BP",
-  },
-];
+        const vendorRequest: IPaginationRequest = {  
+          page: 1,  
+          take: 1000,  
+          order: "asc",  
+          order_by: "name",  
+        };  
+        const vendorResponse = await getVendor(vendorRequest);  
+        setVendorOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...vendorResponse.result.data.map((vendor) => ({  
+            label: vendor.name,  
+            value: vendor.id.toString(),  
+          })),  
+        ]);  
 
-const optionMerchant: TOptions[] = [
-  {
-    label: "All Merchant",
-    value: "All Merchant",
-  },
-  {
-    label: "PONDOK MAHONI MBL ",
-    value: "201203817",
-  },
-  {
-    label: "MARANATHA PONSEL MBL",
-    value: "201042538",
-  },
-  {
-    label: "MARANATHA BABY SHOP MBL",
-    value: "201042520",
-  },
-];
+        const regionResponse = await getAllRegion();  
+        setRegionOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...regionResponse.result.map((region) => ({  
+            label: region.name,  
+            value: region.code,  
+          })),  
+        ]);  
+      } catch (error) {  
+        console.error("Error fetching options:", error);  
+      }  
+    };  
 
-function JobOrder() {
-  const [valueStatus, setValueStatus] = useState<string>("All Status");
-  const [valueWilayah, setValueWilayah] = useState<string>("All Wilayah");
-  const [valueVendor, setValueVendor] = useState<string>("All Vendor");
-  const [valueMerchant, setValueMerchant] = useState<string>("All Merchant");
-  const { Title } = Typography;
-  const { RangePicker } = DatePicker;
-  const { onChangeTable, onChangeSearchBy } = useTableHelper<DataType>();
+    fetchOptions();  
+  }, []);  
 
-  const handleChangeFilterStatus = (key: string) => {
-    setValueStatus(key);
-  };
-  const handleChangeFilterWilayah = (key: string) => {
-    setValueWilayah(key);
-  };
-  const handleChangeFilterVendor = (key: string) => {
-    setValueVendor(key);
-  };
-  const handleChangeFilterMerchant = (key: string) => {
-    setValueMerchant(key);
-  };
+  const { data: jobOrders, isLoading } = useQuery({  
+    queryKey: ["job-order-report", { ...tableFilter, searchValue }],  
+    queryFn: () =>  
+      getJobOrderReports({  
+        order: tableFilter.sort.order,  
+        order_by: tableFilter.sort.order_by,  
+        search: searchValue,  
+        search_by: ["job_order.no", "job_order.type"],  
+        page: Number(tableFilter.pagination.current) || 1,  
+        take: Number(tableFilter.pagination.pageSize) || 10,
+      }),  
+  });  
 
-  const handleDownload = async () => {
-    const date = new Date();
-    const blob = await pdf(<ReportPDF />).toBlob();
-    // saveAs(blob, `${dayjs(date).format("DD_MM_YYYY")} Work Order.pdf`);
-    saveAs(blob, `Work Order.pdf`);
-  };
+  const columns: ColumnsType<IJobOrderReportModel> = useMemo(() => {  
+    return [  
+      {  
+        title: "NO. JO",  
+        dataIndex: "job_order_no",  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "JENIS JO",  
+        dataIndex: ["job_order", "type"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (jenis_jo) => {  
+          return (jenis_jo || "").includes("Cancel") ? <Badge color="red" text={jenis_jo} /> : jenis_jo;  
+        },  
+      },  
+      {  
+        title: "TANGGAL",  
+        dataIndex: ["job_order", "date"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (tanggal_jo) => {  
+          return dayjs(tanggal_jo).format("DD-MMM-YYYY");  
+        },  
+      },  
+      {  
+        title: "MID",  
+        dataIndex: ["job_order", "mid"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "TID",  
+        dataIndex: ["job_order", "tid"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "NAMA MERCHANT",  
+        dataIndex: ["job_order", "merchant_name"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 1",  
+        dataIndex: ["job_order", "address1"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 2",  
+        dataIndex: ["job_order", "address2"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 3",  
+        dataIndex: ["job_order", "address3"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 4",  
+        dataIndex: ["job_order", "address4"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "Status Approval",  
+        dataIndex: "status_approve",  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (status: "Pending" | "Approved" | "Rejected") => (  
+          <Tag color={status === "Pending" ? "blue" : status === "Approved" ? "green" : "red"}>  
+            {status}  
+          </Tag>  
+        ),  
+      },  
+      {  
+        title: "ACTION",  
+        render: (record) => {  
+          return (  
+            <Button type="primary" onClick={() => handleDownload(record)}>  
+            Job Order Report  
+        </Button>   
+          );  
+        },  
+      },  
+    ];  
+  }, []);  
 
-  const columns: ColumnsType<DataType> = useMemo(() => {
-    return [
-      {
-        title: "No. JO",
-        dataIndex: "no_jo",
-        key: "no_jo",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return <div className="w-60">{row || "-"}</div>;
-        },
-      },
-      {
-        title: "Jenis JO",
-        dataIndex: "jenis_jo",
-        key: "jenis_jo",
-        width: "20%",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Tanggal JO",
-        dataIndex: "tanggal_jo",
-        key: "tanggal_jo",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "MID",
-        dataIndex: "mid",
-        key: "mid",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "TID",
-        dataIndex: "tid",
-        key: "tid",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Nama Merchant",
-        dataIndex: "nama_merchant",
-        key: "nama_merchant",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Address 1",
-        dataIndex: "address1",
-        key: "address1",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        width: "50%",
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Address 2",
-        dataIndex: "address2",
-        key: "address2",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        width: "50%",
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Address 3",
-        dataIndex: "address3",
-        key: "address3",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        width: "50%",
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Address 4",
-        dataIndex: "address4",
-        key: "address4",
-        sorter: true,
-        sortDirections: ["descend", "ascend"],
-        width: "50%",
-        render: (row) => {
-          return row || "-";
-        },
-      },
-      {
-        title: "Aksi",
-        width: "50%",
-        render: (row) => {
-          return (
-            <Button
-              type="primary"
-              style={{
-                marginTop: "6px",
-              }}
-              onClick={() => handleDownload()}
-            >
-              Job Order Report
-            </Button>
-          );
-        },
-      },
-    ];
-  }, []);
-  return (
-    <>
-      <Flex justify="space-between" align="flex-end">
-        <Title level={3}>Job Order Report</Title>
-        <Space direction="vertical" size={12}>
-          <RangePicker />
-        </Space>
-      </Flex>
-      <FilterTable
-        optionStatus={optionStatus}
-        valueStatus={valueStatus}
-        handleChangeFilterStatus={handleChangeFilterStatus}
-        optionWilayah={optionWilayah}
-        valueWilayah={valueWilayah}
-        handleChangeFilterWilayah={handleChangeFilterWilayah}
-        optionVendor={optionVendor}
-        valueVendor={valueVendor}
-        handleChangeFilterVendor={handleChangeFilterVendor}
-        optionMerchant={optionMerchant}
-        valueMerchant={valueMerchant}
-        handleChangeFilterMerchant={handleChangeFilterMerchant}
-        hasDownloadReportOrder={false}
-      />
-      <DataTable<DataType>
-        style={{
-          overflowX: "auto",
-        }}
-        columns={columns}
-        bordered
-        useGlobalSearchInput
-        dataSource={data}
-        pagination={{
-          current: 1,
-          pageSize: 10,
-          total: data.length,
-        }}
-        onChange={onChangeTable}
-      />
-    </>
-  );
-}
+  const handleDownload = async (record: any) => {  
+    try {  
+       const requiredProperties = [  
+        'job_order',  
+        'JobOrderReportEdcEquipmentDongle',  
+        'JobOrderReportMaterialPromo',  
+        'JobOrderReportMaterialTraining',  
+        'MediaJobOrderReportProofOfVisit',  
+        'MediaJobOrderReportOptionalPhoto'  
+      ];  
+  
+      const missingProperties = requiredProperties.filter(prop => !record[prop]);  
+  
+      if (missingProperties.length > 0) {  
+        console.error("Record is missing required properties:", missingProperties, record);  
+        alert(`Unable to generate report. Missing properties: ${missingProperties.join(', ')}`);  
+        return;  
+      }  
+  
+      const transformedData = {  
+        job_order_no: record.job_order_no || '',  
+        job_order: {  
+          merchant_name: record.job_order?.merchant_name || '',  
+          target_date: record.job_order?.date || '',  
+          type: record.job_order?.type || '',  
+          tid: record.job_order?.tid || '',  
+          case_type: record.job_order?.case_type || '',  
+        },  
+        products: [  
+          {  
+            name: record.edc_brand || '',  
+            serial_number: record.edc_serial_number || '',  
+            notes: record.edc_note || '',  
+            action: record.edc_action || '',  
+          },  
+        ],  
+        status: record.status || '',  
+        status_approve: record.status_approve || '',  
+        arrival_time: record.arrival_time || null,  
+        start_time: record.start_time || null,  
+        end_time: record.end_time || null,  
+        communication_line: record.communication_line || '',  
+        direct_line_number: record.direct_line_number || '',  
+        simcard_provider: record.simcard_provider || '',  
+        paper_supply: record.paper_supply || '',  
+        merchant_pic: record.merchant_pic || '',  
+        merchant_pic_phone: record.merchant_pic_phone || '',  
+        swipe_cash_indication: record.swipe_cash_indication || '',  
+        dongle: {  
+          battery_cover: record.JobOrderReportEdcEquipmentDongle[0]?.battery_cover || false,  
+          battery: record.JobOrderReportEdcEquipmentDongle[0]?.battery || false,  
+          edc_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.edc_adapter || false,  
+          edc_bracket: record.JobOrderReportEdcEquipmentDongle[0]?.edc_bracket || false,  
+          edc_holder: record.JobOrderReportEdcEquipmentDongle[0]?.edc_holder || false,  
+          dongle_holder: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_holder || false,  
+          dongle_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_adapter || false,  
+          cable_ecr: record.JobOrderReportEdcEquipmentDongle[0]?.cable_ecr || false,  
+          cable_lan: record.JobOrderReportEdcEquipmentDongle[0]?.cable_lan || false,  
+          cable_telephone_line: record.JobOrderReportEdcEquipmentDongle[0]?.cable_telephone_line || false,  
+          mid_tid: record.JobOrderReportEdcEquipmentDongle[0]?.mid_tid || false,  
+          magic_box: record.JobOrderReportEdcEquipmentDongle[0]?.magic_box || false,  
+          transaction_guide: record.JobOrderReportEdcEquipmentDongle[0]?.transaction_guide || false,  
+          pin_cover: record.JobOrderReportEdcEquipmentDongle[0]?.pin_cover || false,  
+          telephone_line_splitter: record.JobOrderReportEdcEquipmentDongle[0]?.telephone_line_splitter || false,  
+          sticker_bank: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_bank || false,  
+          sticer_dongle: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_dongle || false,  
+          sticer_gpn: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_gpn || false,  
+          sticker_qrcode: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_qrcode || false,  
+        },  
+        promo_materials: {  
+          flyer: record.JobOrderReportMaterialPromo[0]?.flyer || false,  
+          tent_card: record.JobOrderReportMaterialPromo[0]?.tent_card || false,  
+          holder_card: record.JobOrderReportMaterialPromo[0]?.holder_card || false,  
+          holder_pen: record.JobOrderReportMaterialPromo[0]?.holder_pen || false,  
+          holder_bill: record.JobOrderReportMaterialPromo[0]?.holder_bill || false,  
+          sign_pad: record.JobOrderReportMaterialPromo[0]?.sign_pad || false,  
+          pen: record.JobOrderReportMaterialPromo[0]?.pen || false,  
+          acrylic_open_close: record.JobOrderReportMaterialPromo[0]?.acrylic_open_close || false,  
+          logo_sticker: record.JobOrderReportMaterialPromo[0]?.logo_sticker || false,  
+          banner: record.JobOrderReportMaterialPromo[0]?.banner || false,  
+        },  
+        training_materials: {  
+          fraud_awareness: record.JobOrderReportMaterialTraining[0]?.fraud_awareness || false,  
+          sale_void_settlement_logon: record.JobOrderReportMaterialTraining[0]?.sale_void_settlement_logon || false,  
+          installment: record.JobOrderReportMaterialTraining[0]?.installment || false,  
+          audit_report: record.JobOrderReportMaterialTraining[0]?.audit_report || false,  
+          top_up: record.JobOrderReportMaterialTraining[0]?.top_up || false,  
+          redeem_point: record.JobOrderReportMaterialTraining[0]?.redeem_point || false,  
+          cardverif_preauth_offline: record.JobOrderReportMaterialTraining[0]?.cardverif_preauth_offline || false,  
+          manual_key_in: record.JobOrderReportMaterialTraining[0]?.manual_key_in || false,  
+          tips_adjust: record.JobOrderReportMaterialTraining[0]?.tips_adjust || false,  
+          mini_atm: record.JobOrderReportMaterialTraining[0]?.mini_atm || false,  
+          fare_non_fare: record.JobOrderReportMaterialTraining[0]?.fare_non_fare || false,  
+          dcc_download_bin: record.JobOrderReportMaterialTraining[0]?.dcc_download_bin || false,  
+          first_level_maintenance: record.JobOrderReportMaterialTraining[0]?.first_level_maintenance || false,  
+          transaction_receipt_storage: record.JobOrderReportMaterialTraining[0]?.transaction_receipt_storage || false,  
+        },  
+        images: [  
+          ...record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media: { path: media.media.path },  
+          })),  
+          ...record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media: { path: media.media.path },  
+          })),  
+        ],  
+      };
+  
+      const blob = await pdf(<ReportPDF data={transformedData} />).toBlob();  
+    saveAs(blob, `${record.job_order_no}_Report.pdf`);  
+  } catch (error) {  
+    console.error("Error generating PDF report:", error);  
+    alert("An error occurred while generating the report. Please try again.");  
+  }  
+  };  
+  
+  return (  
+    <>  
+      <Flex justify="space-between" align="flex-end">  
+        <Title level={3}>Job Order Report</Title>  
+        <Space direction="vertical" size={12}>  
+          <RangePicker />  
+        </Space>  
+      </Flex>  
+      <FilterTable  
+        optionStatus={optionStatus}  
+        optionWilayah={regionOptions}  
+        optionVendor={vendorOptions}  
+        optionMerchant={merchantOptions}  
+        hasDownloadReportOrder={false}  
+        handleChangeFilterStatus={(value) => setSelectedStatus(value)}  
+        valueStatus={selectedStatus}  
+        handleChangeFilterWilayah={(value) => setSelectedWilayah(value)}  
+        valueWilayah={selectedWilayah}  
+        handleChangeFilterVendor={(value) => setSelectedVendor(value)}  
+        valueVendor={selectedVendor}  
+        handleChangeFilterMerchant={(value) => setSelectedMerchant(value)}  
+        valueMerchant={selectedMerchant}  
+      />  
+      <DataTable<IJobOrderReportModel>  
+        dataSource={jobOrders?.result.data}  
+        pagination={{  
+          current: jobOrders?.result.meta.page,  
+          pageSize: jobOrders?.result.meta.take,  
+          total: jobOrders?.result.meta.item_count,  
+        }}  
+        loading={isLoading}  
+        bordered  
+        onChangeSearchBy={onChangeSearchBy}  
+        onGlobalSearch={(value) => setSearch(value)}  
+        columns={columns}  
+        useGlobalSearchInput  
+        onChange={onChangeTable}  
+        scroll={{  
+          x: 3000,  
+        }}  
+      />  
+    </>  
+  );  
+}  
 
 export default JobOrder;

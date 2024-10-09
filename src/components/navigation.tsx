@@ -58,7 +58,7 @@ const items: MenuItem[] = [
     [  
       getItem("Open Job Order", "job-order/open"),  
       getItem("Activity Job Order", "job-order/activity"),  
-      getItem("Results  ", "job-order/results"),  
+      getItem("Results Job Order", "job-order/results"),  
     ]  
   ),  
   getItem("Merchant", "merchant", <IconBuildingStore size="1.2rem" />, [  
@@ -74,12 +74,25 @@ const items: MenuItem[] = [
   ]),  
   getItem("Report", "report", <IconReportAnalytics size="1.2rem" />),  
   getItem("Document", "document", <IconFile size="1.2rem" />, [  
-    getItem("Merchant", "document/"),  
-    getItem("Vendor", "document/"),  
+    getItem("Merchant", "document/DocMerchant"),  
+    getItem("Vendor", "document/DocVendor"),  
   ]),     
   getItem("Payment", "payment", <IconCurrencyDollar size="1.2rem" />),  
+<<<<<<< Updated upstream
   getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),  
   getItem("Audit", "auditTrail", <IconHistory size="1.2rem" />),  
+=======
+  getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),   
+  getItem(  
+    "Audit",  
+    "audit",  
+    <IconHistory size="1.2rem" />,  
+    [  
+      getItem("Authentication Logs", "audit/authlogs"),  
+      getItem("System Logs", "audit/syslogs"),  
+    ]  
+  ),
+>>>>>>> Stashed changes
 ];  
 
 const rootSubmenuKeys = ["sub1", "sub2", "sub4"];  

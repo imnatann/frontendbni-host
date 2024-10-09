@@ -6,6 +6,7 @@ import {
 import {
 	IFormInputImportJobOrder,
 	IJobOrderModel,
+	IJobOrderReportModel,
 } from "@smpm/models/jobOrderModel"
 import axios from "@smpm/services/axios"
 import { saveAs } from "file-saver"
@@ -28,6 +29,30 @@ export const getActivityJobOrder = async (
 	return response.data
 }
 
+<<<<<<< Updated upstream
+=======
+export const getDoneActivityJobOrder = async (  
+	param: IPaginationRequest  
+  ): Promise<IBaseResponseService<IPaginationResponse<IJobOrderModel>>> => {  
+	const response = await axios.get("/job-order/activity", {  
+	  params: {  
+		...param,  
+		status: ['Done'],    
+	  },  
+	});  
+	return response.data;  
+  };  
+
+  export const getJobOrderReports = async (  
+	param: IPaginationRequest & { search_by: string[] }   
+): Promise<IBaseResponseService<IPaginationResponse<IJobOrderReportModel>>> => {  
+	const response = await axios.get("/job-order-report", {  
+		params: param,  
+	});  
+	return response.data;  
+};  
+
+>>>>>>> Stashed changes
 export const downloadTemplateJobOrderNew = async () => {
 	const response = await axios.get("/job-order/template/download", {
 		responseType: "blob",

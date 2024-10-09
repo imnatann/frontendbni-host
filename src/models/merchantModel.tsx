@@ -1,6 +1,8 @@
 import { IRegionModel } from "./regionModel";
 
 export interface IMerchantModel {
+  file_2: any;
+  file_2: any;
   id?: number;
   
   region_id: number;
