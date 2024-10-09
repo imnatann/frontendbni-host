@@ -78,10 +78,6 @@ const items: MenuItem[] = [
     getItem("Vendor", "document/DocVendor"),  
   ]),     
   getItem("Payment", "payment", <IconCurrencyDollar size="1.2rem" />),  
-<<<<<<< Updated upstream
-  getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),  
-  getItem("Audit", "auditTrail", <IconHistory size="1.2rem" />),  
-=======
   getItem("Approve", "approve", <IconCheckbox size="1.2rem" />),   
   getItem(  
     "Audit",  
@@ -92,8 +88,7 @@ const items: MenuItem[] = [
       getItem("System Logs", "audit/syslogs"),  
     ]  
   ),
->>>>>>> Stashed changes
-];  
+ ];  
 
 const rootSubmenuKeys = ["sub1", "sub2", "sub4"];  
 

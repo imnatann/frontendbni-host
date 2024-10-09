@@ -161,7 +161,7 @@ export const routes: RouteObject[] = [
 					},
 					{
 						path: "DocVendor",
-						Component: lazy(() => import("@smpm/pages/DocVendor/index")),
+						Component: lazy(() => import("@smpm/pages/DocVendor/Index")),
 					},
 				],
 			},
