@@ -1,4 +1,5 @@
- export interface ApproveItem {
+
+export interface ApproveItem {
   id: number;  
   id_jobOrder: number;  
   vendor_id: number;  
