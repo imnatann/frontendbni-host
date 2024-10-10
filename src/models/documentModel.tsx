@@ -12,6 +12,7 @@ export interface IUpdateDocMerchantDto {
 }
 
 export interface DocVendorModel {  
+  no_jo: string;
   name: string;  
   jenis_jo: string;  
   vendor_name: string;  

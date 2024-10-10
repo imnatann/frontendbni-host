@@ -29,8 +29,6 @@ export const getActivityJobOrder = async (
 	return response.data
 }
 
-<<<<<<< Updated upstream
-=======
 export const getDoneActivityJobOrder = async (  
 	param: IPaginationRequest  
   ): Promise<IBaseResponseService<IPaginationResponse<IJobOrderModel>>> => {  
@@ -52,7 +50,6 @@ export const getDoneActivityJobOrder = async (
 	return response.data;  
 };  
 
->>>>>>> Stashed changes
 export const downloadTemplateJobOrderNew = async () => {
 	const response = await axios.get("/job-order/template/download", {
 		responseType: "blob",

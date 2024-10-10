@@ -1,7 +1,7 @@
+
+import React from "react";
 import { HomeOutlined } from "@ant-design/icons";
 import PageContent from "@smpm/components/PageContent";
-import PageLabel from "@smpm/components/PageLabel";
-import Page from "@smpm/components/PageTitle";
 import {
   IconBuildingSkyscraper,
   IconBuildingStore,
@@ -11,7 +11,7 @@ import {
   IconUser,
   IconUsers,
 } from "@tabler/icons-react";
-import { Breadcrumb, Card, Col, Row, Typography } from "antd";
+import { Breadcrumb, Card, Col, Row, Typography, Spin } from "antd";
 import ChartEdcProfile from "./components/ChartEdcProfile";
 import ChartKepemilikan from "./components/ChartKepemilikan";
 import ChartPopulasiByVendor from "./components/ChartPopulasiByVendor";
@@ -22,39 +22,49 @@ import ChartStatusPenarikan from "./components/ChartStatusPenarikan";
 import ChartStatusPemasangan from "./components/ChartStatusPemasangan";
 import ChartStatusPm from "./components/ChartStatusPm";
 import ChartStatusCm from "./components/ChartStatusCm";
-
-const Dashboard = () => {
+import { useQuery } from '@tanstack/react-query';
+import { fetchDashboardCounts } from "@smpm/services/dashboardService";
+import Page from "@smpm/components/pageTitle";
+import PageLabel from "@smpm/components/pageLabel";
+import { DashboardCounts } from "@smpm/models/dashboardModel";
+ 
+const Dashboard: React.FC = () => {
   const { Title } = Typography;
 
-  const count = [
+  const { data: counts, isLoading, error } = useQuery<DashboardCounts, Error>({
+    queryKey: ['dashboardCounts'],
+    queryFn: fetchDashboardCounts
+  });
+
+  const countItems = [
     {
       today: "User Terdaftar",
-      title: "1.646",
+      title: counts?.userCount.toString() || '0',
       icon: <IconUser />,
     },
     {
       today: "Total Group Roles",
-      title: "10",
+      title: counts?.groupRolesCount.toString() || '0',
       icon: <IconUsers />,
     },
     {
       today: "Total Wilayah",
-      title: "21",
+      title: counts?.wilayahCount.toString() || '0',
       icon: <IconBuildingSkyscraper />,
     },
     {
       today: "Total Vendor",
-      title: "18",
+      title: counts?.vendorCount.toString() || '0',
       icon: <IconIdBadge2 />,
     },
     {
       today: "Total MID",
-      title: "10",
+      title: counts?.midCount.toString() || '0',
       icon: <IconBuildingStore />,
     },
     {
       today: "Total TID",
-      title: "10",
+      title: counts?.tidCount.toString() || '0',
       icon: <IconDevicesPc />,
     },
   ];
@@ -62,6 +72,14 @@ const Dashboard = () => {
   const onChangeYear: DatePickerProps["onChange"] = (date, dateString) => {
     console.log(date, dateString);
   };
+
+  if (isLoading) {
+    return <Spin size="large" />;
+  }
+
+  if (error) {
+    return <div>Error loading dashboard data: {error.message}</div>;
+  }
 
   return (
     <Page title="Dashboard">
@@ -85,7 +103,7 @@ const Dashboard = () => {
       />
       <PageContent className={"m-5"}>
         <Row className="rowgap-vbox" gutter={[24, 0]}>
-          {count.map((c, index) => (
+          {countItems.map((c, index) => (
             <Col
               key={index}
               xs={24}

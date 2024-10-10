@@ -40,8 +40,8 @@ const TableActivityJobOrder: React.FC<ITableActivityJobOrderProps> = ({
 				order_by: tableFilter.sort.order_by,
 				search: searchValue,
 				search_by: tableFilter.searchBy,
-				page: parseInt(tableFilter.pagination.current),
-				take: parseInt(tableFilter.pagination.pageSize),
+				page: Number(tableFilter.pagination.current),
+				take: Number(tableFilter.pagination.pageSize),
 				...filter,
 			}),
 	})

@@ -5,7 +5,7 @@ import React, { useState } from "react";
 
 const { Option } = Select;  
 
-const FormFieldSerialNumberEDC = () => {  
+const FormFieldReceivedOutEDC = () => {  
   const [selectedBrand, setSelectedBrand] = useState("");  
   const [form] = Form.useForm();  
 
@@ -82,4 +82,4 @@ const FormFieldSerialNumberEDC = () => {
   );  
 };  
 
-export default FormFieldSerialNumberEDC;
+export default FormFieldReceivedOutEDC;

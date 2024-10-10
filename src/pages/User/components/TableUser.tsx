@@ -28,7 +28,7 @@ interface TableUserProps {
 const TableUser: React.FC<TableUserProps> = ({ isAddModalVisible, setIsAddModalVisible }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const { onChangeTable, onChangeSearchBy } = useTableHelper<IUserModel>()
+  const { onChangeTable, onChangeSearchBy } = useTableHelper<IUserModel>({pagination: true})
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState<string>("")

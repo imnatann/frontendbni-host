@@ -11,15 +11,17 @@ export const createDataEDC = async (data: any): Promise<any> => {
 	return response.data
 }
 
-export const getDataEDC = async (
-	param: IPaginationRequest
-): Promise<
-	IBaseResponseService<IPaginationResponse<ElectronicDataCaptureMachine>>
-> => {
-	const response = await axios.get("/electronic-data-capture", {
-		params: param,
-	})
-	return response.data
+export const getDataEDC = async (  
+	param: IPaginationRequest  
+): Promise<  
+	IBaseResponseService<IPaginationResponse<ElectronicDataCaptureMachine>>  
+> => {  
+ 	const { order_by, ...paginationParams } = param;  
+
+	const response = await axios.get("/electronic-data-capture", {  
+		params: paginationParams,  
+	});  
+	return response.data;  
 }
 
 export const getBrand = async () => {

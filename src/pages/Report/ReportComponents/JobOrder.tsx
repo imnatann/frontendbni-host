@@ -174,8 +174,8 @@ function JobOrder() {
         dataIndex: "status_approve",  
         sorter: true,  
         sortDirections: ["descend", "ascend"],  
-        render: (status: "Pending" | "Approved" | "Rejected") => (  
-          <Tag color={status === "Pending" ? "blue" : status === "Approved" ? "green" : "red"}>  
+        render: (status: "Waiting" | "Approved" | "Rejected") => (  
+          <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
             {status}  
           </Tag>  
         ),  

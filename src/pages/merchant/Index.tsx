@@ -1,8 +1,6 @@
 import {
-  CloudUploadOutlined,
   HomeOutlined,
-  VerticalAlignTopOutlined,
-} from "@ant-design/icons";
+ } from "@ant-design/icons";
 import PageContent from "@smpm/components/PageContent";
 import { IconBuildingStore } from "@tabler/icons-react";
 import {
@@ -11,8 +9,6 @@ import {
   Card,
   Divider,
   Flex,
-  Modal,
-  Space,
   Typography,
 } from "antd";
 import { useState } from "react";
@@ -21,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import Page from "@smpm/components/pageTitle";
 import PageLabel from "@smpm/components/pageLabel";
 import TableView from "./components/TableView";
- const { Title } = Typography;
+  const { Title } = Typography;
 
 const Region = () => {
   const [ReportModalVisible, setReportModalVisible] = useState(false);

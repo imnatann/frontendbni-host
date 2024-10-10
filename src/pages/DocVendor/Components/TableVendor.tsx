@@ -8,6 +8,7 @@ import { ColumnsType } from "antd/es/table";
 import { useQuery } from "@tanstack/react-query";  
 import { DocVendorModel } from "@smpm/models/documentModel";  
 import { findAll } from "@smpm/services/docvendorService";
+import { formatDateIndo } from "@smpm/utils/dateUtils";
 
 const { Text } = Typography;  
 
@@ -120,12 +121,12 @@ const TableVendor: React.FC = () => {
     const activityData = activityJobOrder?.result.data || [];  
     return [  
       ...activityData.map((item: any) => ({  
-        name: item.no,  
-        jenis_jo: item.type,  
+        name: item.jobOrder.no,  
+        jenis_jo: item.jobOrder.type,  
         vendor_name: item.vendor.name,  
-        merk_edc: "VERIFONE",  
-        tipe_edc: "X990 (Android)",  
-        tanggal_masuk: item.date,  
+        merk_edc: item.edc.brand,  
+        tipe_edc: item.edc.brand_type,  
+        tanggal_masuk: formatDateIndo(item.jobOrder.updated_at),  
         file1: item.file1,  
         file2: item.file2,  
       })),  
