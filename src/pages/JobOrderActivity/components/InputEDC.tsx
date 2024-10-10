@@ -1,5 +1,5 @@
 import FormFieldInputListEDC from "@smpm/components/FormFields/FormFieldInputListEDC";  
-import FormFieldReceivedOutEDC from "@smpm/components/FormFields/FormFieldReceivedOutEdc";
+// import FormFieldReceivedOutEDC from "@smpm/components/FormFields/FormFieldReceivedOutEdc";
  import FormFieldSerialNumberEDC from "@smpm/components/FormFields/FormFieldSerialNumberEDC";  
 import { Divider, Typography } from "antd";  
 import { useEffect, useState } from "react";  
@@ -11,7 +11,7 @@ type InputEDCProps = {
 };  
 
 const InputEDC: React.FC<InputEDCProps> = ({ hide }) => {  
-  const [jobOrderCode, setJobOrderCode] = useState("");  
+  const [_jobOrderCode, setJobOrderCode] = useState("");  
 
   useEffect(() => {  
      const urlParts = window.location.pathname.split("/");  
@@ -26,7 +26,11 @@ const InputEDC: React.FC<InputEDCProps> = ({ hide }) => {
         display: hide ? "none" : "block",  
       }}  
     >  
-      {!jobOrderCode.includes("WD") && (  
+    <>  
+          <Title level={5}>EDC</Title>  
+          <FormFieldSerialNumberEDC />  
+        </>  
+      {/* {!jobOrderCode.includes("WD") && (  
         <>  
           <Title level={5}>EDC</Title>  
           <FormFieldSerialNumberEDC />  
@@ -43,7 +47,7 @@ const InputEDC: React.FC<InputEDCProps> = ({ hide }) => {
           <Title level={5}>Out Edc</Title>  
           <FormFieldReceivedOutEDC />  
         </>  
-      )}  
+      )}   */}
       <Divider />  
       <Title level={5}>Products</Title>  
       <FormFieldInputListEDC />  

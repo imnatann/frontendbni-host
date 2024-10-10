@@ -1,279 +1,356 @@
-import { Card, DatePicker, Flex, Select, Space, Tag, Typography } from "antd";
-import { ColumnsType } from "antd/es/table";
-import DataTable, {
-  getColumnFilter,
-  getColumnSearchProps,
-} from "@smpm/components/DataTable";
-import { Option } from "antd/es/mentions";
-import { IconSearch } from "@tabler/icons-react";
-import useTableHelper from "@smpm/utils/useTableHelper";
-import PageContent from "@smpm/components/PageContent";
-import FilterTable, { TOptions } from "./FilterTable";
-import { useState } from "react";
+import DataTable from "@smpm/components/DataTable";  
+import { useDebounce } from "@smpm/utils/useDebounce";  
+import useTableHelper from "@smpm/utils/useTableHelper";  
+import { useQuery } from "@tanstack/react-query";  
+import { Badge, Button, DatePicker, Flex, Space, Tag, Typography } from "antd";  
+import { ColumnsType } from "antd/es/table";  
+import * as dayjs from "dayjs";  
+import { useMemo, useState, useEffect } from "react";  
+import FilterTable, { TOptions } from "./FilterTable";  
+import ReportPDF from "./ReportPDF";  
+import { pdf } from "@react-pdf/renderer";  
+import saveAs from "file-saver";  
+import { getDataMerchant } from "@smpm/services/merchantService";  
+import { getVendor } from "@smpm/services/vendorService";  
+import { getAllRegion } from "@smpm/services/regionService";  
+import { IPaginationRequest } from "@smpm/models";  
+import { getPMReports } from "@smpm/services/pmReportService";
+import { IPreventiveMaintenanceReportModel } from "@smpm/models/pmReportModel";
 
-interface DataType {
-  key: string;
-  ticket_number: string;
-  mid: string;
-  tid: string;
-  merchant: string;
-  vendor_name: string;
-  vendor_code: string;
-  kantor_wilayah: string;
-}
+const { Title } = Typography;  
+const { RangePicker } = DatePicker;  
 
-const data: DataType[] = [
-  {
-    key: "1",
-    ticket_number: "PMW012022100300001",
-    mid: "201900091",
-    tid: "201900091",
-    merchant: "General Electric",
-    vendor_name: "PT SWADHARMA SARANA INFORMATIKA",
-    vendor_code: "BW",
-    kantor_wilayah: "Kantor Wilayah 01",
-  },
-  {
-    key: "2",
-    ticket_number: "PMW012022100300002",
-    mid: "654856778",
-    tid: "654856778",
-    merchant: "Gillette",
-    vendor_name: "PT SWADHARMA SARANA INFORMATIKA",
-    vendor_code: "BW",
-    kantor_wilayah: "Kantor Wilayah 01",
-  },
-  {
-    key: "3",
-    ticket_number: "PMW012022100300003",
-    mid: "8787451988",
-    tid: "8787451988",
-    merchant: "Mitsubishi",
-    vendor_name: "PT SWADHARMA SARANA INFORMATIKA",
-    vendor_code: "BW",
-    kantor_wilayah: "Kantor Wilayah 01",
-  },
-];
+const optionStatus: TOptions[] = [  
+  { label: "All Status", value: "All Status" },  
+  { label: "Tersedia", value: "Tersedia" },  
+  { label: "Terpasang", value: "Terpasang" },  
+  { label: "Rusak", value: "Rusak" },  
+];  
 
-const optionStatus: TOptions[] = [
-  {
-    label: "All Status",
-    value: "All Status",
-  },
-  {
-    label: "Aktif",
-    value: "Aktif",
-  },
-  {
-    label: "Tidak Aktif",
-    value: "Tidak Aktif",
-  },
-];
+function PreventiveMaintenance() {  
+  const { tableFilter, onChangeTable, onChangeSearchBy } = useTableHelper<IPreventiveMaintenanceReportModel>({ pagination: true });  
+  const [search, setSearch] = useState<string>("");  
+  const searchValue = useDebounce(search, 500);  
+ const [selectedStatus, setSelectedStatus] = useState("All Status");  
+  const [selectedWilayah, setSelectedWilayah] = useState("All Wilayah");  
+  const [selectedVendor, setSelectedVendor] = useState("All Vendor");  
+  const [selectedMerchant, setSelectedMerchant] = useState("All Merchant");  
+  const [merchantOptions, setMerchantOptions] = useState<TOptions[]>([{ label: "All Merchant", value: "All Merchant" }]);  
+  const [vendorOptions, setVendorOptions] = useState<TOptions[]>([{ label: "All Vendor", value: "All Vendor" }]);  
+  const [regionOptions, setRegionOptions] = useState<TOptions[]>([{ label: "All Wilayah", value: "All Wilayah" }]);  
 
-const optionWilayah: TOptions[] = [
-  {
-    label: "All Wilayah",
-    value: "All Status",
-  },
-  {
-    label: "Kantor Wilayah 01",
-    value: "W01",
-  },
-  {
-    label: "Kantor Wilayah 02",
-    value: "W02",
-  },
-  {
-    label: "Kantor Wilayah 03",
-    value: "W03",
-  },
-];
+  useEffect(() => {  
+    const fetchOptions = async () => {  
+      try {  
+        const merchantRequest: IPaginationRequest = {  
+          page: 1,  
+          take: 1000,  
+          order: "asc",  
+          order_by: "name",  
+        };  
+        const merchantResponse = await getDataMerchant(merchantRequest);  
+        setMerchantOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...merchantResponse.result.data.map((merchant) => ({  
+            label: merchant.name,  
+            value: merchant.id?.toString(),  
+          })),  
+        ]);  
 
-const optionVendor: TOptions[] = [
-  {
-    label: "All Vendor",
-    value: "All Vendor",
-  },
-  {
-    label: "PT SWADHARMA SARANA INFORMATIKA",
-    value: "BW",
-  },
-  {
-    label: "PT INGENICO INTERNATIONAL INDONESIA",
-    value: "IG",
-  },
-  {
-    label: "PT PRIMA VISTA SOLUSI",
-    value: "BP",
-  },
-];
+        const vendorRequest: IPaginationRequest = {  
+          page: 1,  
+          take: 1000,  
+          order: "asc",  
+          order_by: "name",  
+        };  
+        const vendorResponse = await getVendor(vendorRequest);  
+        setVendorOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...vendorResponse.result.data.map((vendor) => ({  
+            label: vendor.name,  
+            value: vendor.id.toString(),  
+          })),  
+        ]);  
 
-const optionMerchant: TOptions[] = [
-  {
-    label: "All Merchant",
-    value: "All Merchant",
-  },
-  {
-    label: "PONDOK MAHONI MBL ",
-    value: "201203817",
-  },
-  {
-    label: "MARANATHA PONSEL MBL",
-    value: "201042538",
-  },
-  {
-    label: "MARANATHA BABY SHOP MBL",
-    value: "201042520",
-  },
-];
+        const regionResponse = await getAllRegion();  
+        setRegionOptions((prevOptions) => [  
+          prevOptions[0],  
+          ...regionResponse.result.map((region) => ({  
+            label: region.name,  
+            value: region.code,  
+          })),  
+        ]);  
+      } catch (error) {  
+        console.error("Error fetching options:", error);  
+      }  
+    };  
 
-function PreventiveMaintenance() {
-  const [valueStatus, setValueStatus] = useState<string>("All Status");
-  const [valueWilayah, setValueWilayah] = useState<string>("All Wilayah");
-  const [valueVendor, setValueVendor] = useState<string>("All Vendor");
-  const [valueMerchant, setValueMerchant] = useState<string>("All Merchant");
-  const { Title } = Typography;
-  const { RangePicker } = DatePicker;
-  const { onChangeTable, onChangeSearchBy } = useTableHelper<DataType>();
+    fetchOptions();  
+  }, []);  
 
-  const handleChangeFilterStatus = (key: string) => {
-    setValueStatus(key);
-  };
-  const handleChangeFilterWilayah = (key: string) => {
-    setValueWilayah(key);
-  };
-  const handleChangeFilterVendor = (key: string) => {
-    setValueVendor(key);
-  };
-  const handleChangeFilterMerchant = (key: string) => {
-    setValueMerchant(key);
-  };
+  const { data: preventives, isLoading } = useQuery({  
+    queryKey: ["preventive-maintenance-report", { ...tableFilter, searchValue }],  
+    queryFn: () =>  
+      getPMReports({  
+        order: tableFilter.sort.order,  
+        order_by: tableFilter.sort.order_by,  
+        search: searchValue,  
+        search_by: ["job_order.no", "job_order.type"],  
+        page: Number(tableFilter.pagination.current) || 1,  
+        take: Number(tableFilter.pagination.pageSize) || 10,
+      }),  
+  });  
 
-  const columns: ColumnsType<DataType> = [
-    {
-      title: "Ticket Number",
-      dataIndex: "ticket_number",
-      key: "ticket_number",
-      width: "20%",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "MID",
-      dataIndex: "mid",
-      key: "mid",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "TID",
-      dataIndex: "TID",
-      key: "TID",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "Merchant",
-      dataIndex: "merchant",
-      key: "merchant",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "Vendor Name",
-      dataIndex: "vendor_name",
-      key: "vendor_name",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "Vendor Code",
-      dataIndex: "vendor_code",
-      key: "vendor_code",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      width: "50%",
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {
-      title: "Kantor Wilayah",
-      dataIndex: "kantor_wilayah",
-      key: "kantor_wilayah",
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      width: "50%",
-      render: (row) => {
-        return row || "-";
-      },
-    },
-    {  
-      title: "Status",  
-      dataIndex: "status",  
-      sorter: true,  
-      sortDirections: ["descend", "ascend"],  
-      render: (status: "Approve" | "Reject") => (  
-        <Tag color={status === "Approve" ? "green" : "red"}>  
-          {status}  
-        </Tag>  
-      ),  
-    },  
-  ];
-  return (
-    <>
-      <Flex justify="space-between" align="flex-end">
-        <Title level={3}>Preventive Maintenance Report</Title>
-        <Space direction="vertical" size={12}>
-          <RangePicker />
-        </Space>
-      </Flex>
-      <FilterTable
-        optionStatus={optionStatus}
-        valueStatus={valueStatus}
-        handleChangeFilterStatus={handleChangeFilterStatus}
-        optionWilayah={optionWilayah}
-        valueWilayah={valueWilayah}
-        handleChangeFilterWilayah={handleChangeFilterWilayah}
-        optionVendor={optionVendor}
-        valueVendor={valueVendor}
-        handleChangeFilterVendor={handleChangeFilterVendor}
-        optionMerchant={optionMerchant}
-        valueMerchant={valueMerchant}
-        handleChangeFilterMerchant={handleChangeFilterMerchant}
-      />
-      <DataTable<DataType>
-        style={{
-          overflowX: "auto",
-        }}
-        columns={columns}
-        bordered
-        useGlobalSearchInput
-        dataSource={data}
-        pagination={{
-          current: 1,
-          pageSize: 10,
-          total: data.length,
-        }}
-        onChange={onChangeTable}
-      />
-    </>
-  );
-}
+  const columns: ColumnsType<IPreventiveMaintenanceReportModel> = useMemo(() => {  
+    return [  
+      {  
+        title: "NO. JO",  
+        dataIndex: "job_order_no",  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "JENIS JO",  
+        dataIndex: ["job_order", "type"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (jenis_jo) => {  
+          return (jenis_jo || "").includes("Cancel") ? <Badge color="red" text={jenis_jo} /> : jenis_jo;  
+        },  
+      },  
+      {  
+        title: "TANGGAL",  
+        dataIndex: ["job_order", "date"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (tanggal_jo) => {  
+          return dayjs(tanggal_jo).format("DD-MMM-YYYY");  
+        },  
+      },  
+      {  
+        title: "MID",  
+        dataIndex: ["job_order", "mid"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "TID",  
+        dataIndex: ["job_order", "tid"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "NAMA MERCHANT",  
+        dataIndex: ["job_order", "merchant_name"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 1",  
+        dataIndex: ["job_order", "address1"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 2",  
+        dataIndex: ["job_order", "address2"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 3",  
+        dataIndex: ["job_order", "address3"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "ADDRESS 4",  
+        dataIndex: ["job_order", "address4"],  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+      },  
+      {  
+        title: "Status Approval",  
+        dataIndex: "status_approve",  
+        sorter: true,  
+        sortDirections: ["descend", "ascend"],  
+        render: (status: "Waiting" | "Approved" | "Rejected") => (  
+          <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
+            {status}  
+          </Tag>  
+        ),  
+      },  
+      {  
+        title: "ACTION",  
+        render: (record) => {  
+          return (  
+            <Button type="primary" onClick={() => handleDownload(record)}>  
+            Preventive Maintenance Report  
+        </Button>   
+          );  
+        },  
+      },  
+    ];  
+  }, []);  
+
+  const handleDownload = async (record: any) => {  
+    try {  
+       const requiredProperties = [  
+        'job_order',  
+        'JobOrderReportEdcEquipmentDongle',  
+        'JobOrderReportMaterialPromo',  
+        'JobOrderReportMaterialTraining',  
+        'MediaJobOrderReportProofOfVisit',  
+        'MediaJobOrderReportOptionalPhoto'  
+      ];  
+  
+      const missingProperties = requiredProperties.filter(prop => !record[prop]);  
+  
+      if (missingProperties.length > 0) {  
+        console.error("Record is missing required properties:", missingProperties, record);  
+        alert(`Unable to generate report. Missing properties: ${missingProperties.join(', ')}`);  
+        return;  
+      }  
+  
+      const transformedData = {  
+        job_order_no: record.job_order_no || '',  
+        job_order: {  
+          merchant_name: record.job_order?.merchant_name || '',  
+          target_date: record.job_order?.date || '',  
+          type: record.job_order?.type || '',  
+          tid: record.job_order?.tid || '',  
+          case_type: record.job_order?.case_type || '',  
+        },  
+        products: [  
+          {  
+            name: record.edc_brand || '',  
+            serial_number: record.edc_serial_number || '',  
+            notes: record.edc_note || '',  
+            action: record.edc_action || '',  
+          },  
+        ],  
+        status: record.status || '',  
+        status_approve: record.status_approve || '',  
+        arrival_time: record.arrival_time || null,  
+        start_time: record.start_time || null,  
+        end_time: record.end_time || null,  
+        communication_line: record.communication_line || '',  
+        direct_line_number: record.direct_line_number || '',  
+        simcard_provider: record.simcard_provider || '',  
+        paper_supply: record.paper_supply || '',  
+        merchant_pic: record.merchant_pic || '',  
+        merchant_pic_phone: record.merchant_pic_phone || '',  
+        swipe_cash_indication: record.swipe_cash_indication || '',  
+        dongle: {  
+          battery_cover: record.JobOrderReportEdcEquipmentDongle[0]?.battery_cover || false,  
+          battery: record.JobOrderReportEdcEquipmentDongle[0]?.battery || false,  
+          edc_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.edc_adapter || false,  
+          edc_bracket: record.JobOrderReportEdcEquipmentDongle[0]?.edc_bracket || false,  
+          edc_holder: record.JobOrderReportEdcEquipmentDongle[0]?.edc_holder || false,  
+          dongle_holder: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_holder || false,  
+          dongle_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_adapter || false,  
+          cable_ecr: record.JobOrderReportEdcEquipmentDongle[0]?.cable_ecr || false,  
+          cable_lan: record.JobOrderReportEdcEquipmentDongle[0]?.cable_lan || false,  
+          cable_telephone_line: record.JobOrderReportEdcEquipmentDongle[0]?.cable_telephone_line || false,  
+          mid_tid: record.JobOrderReportEdcEquipmentDongle[0]?.mid_tid || false,  
+          magic_box: record.JobOrderReportEdcEquipmentDongle[0]?.magic_box || false,  
+          transaction_guide: record.JobOrderReportEdcEquipmentDongle[0]?.transaction_guide || false,  
+          pin_cover: record.JobOrderReportEdcEquipmentDongle[0]?.pin_cover || false,  
+          telephone_line_splitter: record.JobOrderReportEdcEquipmentDongle[0]?.telephone_line_splitter || false,  
+          sticker_bank: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_bank || false,  
+          sticer_dongle: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_dongle || false,  
+          sticer_gpn: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_gpn || false,  
+          sticker_qrcode: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_qrcode || false,  
+        },  
+        promo_materials: {  
+          flyer: record.JobOrderReportMaterialPromo[0]?.flyer || false,  
+          tent_card: record.JobOrderReportMaterialPromo[0]?.tent_card || false,  
+          holder_card: record.JobOrderReportMaterialPromo[0]?.holder_card || false,  
+          holder_pen: record.JobOrderReportMaterialPromo[0]?.holder_pen || false,  
+          holder_bill: record.JobOrderReportMaterialPromo[0]?.holder_bill || false,  
+          sign_pad: record.JobOrderReportMaterialPromo[0]?.sign_pad || false,  
+          pen: record.JobOrderReportMaterialPromo[0]?.pen || false,  
+          acrylic_open_close: record.JobOrderReportMaterialPromo[0]?.acrylic_open_close || false,  
+          logo_sticker: record.JobOrderReportMaterialPromo[0]?.logo_sticker || false,  
+          banner: record.JobOrderReportMaterialPromo[0]?.banner || false,  
+        },  
+        training_materials: {  
+          fraud_awareness: record.JobOrderReportMaterialTraining[0]?.fraud_awareness || false,  
+          sale_void_settlement_logon: record.JobOrderReportMaterialTraining[0]?.sale_void_settlement_logon || false,  
+          installment: record.JobOrderReportMaterialTraining[0]?.installment || false,  
+          audit_report: record.JobOrderReportMaterialTraining[0]?.audit_report || false,  
+          top_up: record.JobOrderReportMaterialTraining[0]?.top_up || false,  
+          redeem_point: record.JobOrderReportMaterialTraining[0]?.redeem_point || false,  
+          cardverif_preauth_offline: record.JobOrderReportMaterialTraining[0]?.cardverif_preauth_offline || false,  
+          manual_key_in: record.JobOrderReportMaterialTraining[0]?.manual_key_in || false,  
+          tips_adjust: record.JobOrderReportMaterialTraining[0]?.tips_adjust || false,  
+          mini_atm: record.JobOrderReportMaterialTraining[0]?.mini_atm || false,  
+          fare_non_fare: record.JobOrderReportMaterialTraining[0]?.fare_non_fare || false,  
+          dcc_download_bin: record.JobOrderReportMaterialTraining[0]?.dcc_download_bin || false,  
+          first_level_maintenance: record.JobOrderReportMaterialTraining[0]?.first_level_maintenance || false,  
+          transaction_receipt_storage: record.JobOrderReportMaterialTraining[0]?.transaction_receipt_storage || false,  
+        },  
+        images: [  
+          ...record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media: { path: media.media.path },  
+          })),  
+          ...record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media: { path: media.media.path },  
+          })),  
+        ],  
+      };
+  
+      const blob = await pdf(<ReportPDF data={transformedData} />).toBlob();  
+    saveAs(blob, `${record.job_order_no}_Report.pdf`);  
+  } catch (error) {  
+    console.error("Error generating PDF report:", error);  
+    alert("An error occurred while generating the report. Please try again.");  
+  }  
+  };  
+  
+  return (  
+    <>  
+      <Flex justify="space-between" align="flex-end">  
+        <Title level={3}>Preventive Maintenance Report</Title>  
+        <Space direction="vertical" size={12}>  
+          <RangePicker />  
+        </Space>  
+      </Flex>  
+      <FilterTable  
+        optionStatus={optionStatus}  
+        optionWilayah={regionOptions}  
+        optionVendor={vendorOptions}  
+        optionMerchant={merchantOptions}  
+        hasDownloadReportOrder={false}  
+        handleChangeFilterStatus={(value) => setSelectedStatus(value)}  
+        valueStatus={selectedStatus}  
+        handleChangeFilterWilayah={(value) => setSelectedWilayah(value)}  
+        valueWilayah={selectedWilayah}  
+        handleChangeFilterVendor={(value) => setSelectedVendor(value)}  
+        valueVendor={selectedVendor}  
+        handleChangeFilterMerchant={(value) => setSelectedMerchant(value)}  
+        valueMerchant={selectedMerchant}  
+      />  
+      <DataTable<IPreventiveMaintenanceReportModel>  
+        dataSource={preventives?.result.data}  
+        pagination={{  
+          current: preventives?.result.meta.page,  
+          pageSize: preventives?.result.meta.take,  
+          total: preventives?.result.meta.item_count,  
+        }}  
+        loading={isLoading}  
+        bordered  
+        onChangeSearchBy={onChangeSearchBy}  
+        onGlobalSearch={(value) => setSearch(value)}  
+        columns={columns}  
+        useGlobalSearchInput  
+        onChange={onChangeTable}  
+        scroll={{  
+          x: 3000,  
+        }}  
+      />  
+    </>  
+  );  
+}  
 
 export default PreventiveMaintenance;

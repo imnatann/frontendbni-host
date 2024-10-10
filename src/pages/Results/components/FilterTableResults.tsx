@@ -16,6 +16,7 @@ const JobOrderType = [
   "New Installation",
   "CM Replace",
   "CM Re-init",
+  "Preventive Maintenance",
   "Withdrawal",
   "Cancel Installation",
   "Cancel Withdrawal",
