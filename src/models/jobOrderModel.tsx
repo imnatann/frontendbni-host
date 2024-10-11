@@ -27,6 +27,11 @@ export interface IJobOrderReportModel {
   edc_serial_number: string;
   edc_note: string;
   edc_action: string;
+  edc_second_brand: string;
+  edc_second_brand_type: string;
+  edc_second_serial_number: string;
+  edc_second_note: string;
+  edc_second_action: string;
   information: string;
   arrival_time: Date;
   start_time: Date;

@@ -79,9 +79,12 @@ const TableVendor: React.FC = () => {
         render: (text, record) => (  
           <Space size="middle">  
             {text ? (  
+              <>
               <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
                 Download File  
               </Button>  
+                <Text className="min-w-[100px]">{text}</Text>  
+              </>
             ) : (  
               <>  
                 <Button icon={<UploadOutlined />}>Choose File</Button>  
@@ -98,13 +101,24 @@ const TableVendor: React.FC = () => {
         title: "File 2",  
         dataIndex: "file2",  
         width: 400,  
-        render: (_text, record) => (  
+        render: (text, record) => (  
           <Space size="middle">  
-            <Button icon={<UploadOutlined />}>Choose File</Button>  
-            <Text className={uploadedFiles[`file_2_${record.name}`] ? 'font-bold' : ''}>  
-              {uploadedFiles[`file_2_${record.name}`] || "No Choose File"}  
-            </Text>  
-            <Button type="primary" className="w-20 h-8">Save</Button>  
+             {text ? (  
+              <>
+              <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
+                Download File  
+              </Button>  
+                <Text className="min-w-[100px]">{text}</Text>  
+              </>
+            ) : (  
+              <>  
+                <Button icon={<UploadOutlined />}>Choose File</Button>  
+                <Text className={uploadedFiles[`file_2_${record.name}`] ? 'font-bold' : ''}>  
+                  {uploadedFiles[`file_2_${record.name}`] || "No Choose File"}  
+                </Text>  
+                <Button type="primary" className="w-20 h-8">Save</Button>  
+              </>  
+            )}  
           </Space>  
         ),  
       },  

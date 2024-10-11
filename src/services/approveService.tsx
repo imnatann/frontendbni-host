@@ -45,12 +45,13 @@ export const approveService = {
     const response = await axios.patch(`/approve/${id}/approve`);
     return response.data;
   },
-  rejectedItem: async (
+
+  // In approveService.js
+  async rejectedItem(
     id: number,
-    reason: string | null,
-    info_remark: string | null,
-  ): Promise<IBaseResponseService<ApproveItem>> => {
-    const response = await axios.patch(`/approve/${id}/reject`);
+    rejectDto: { reason: string; info_remark: string }
+  ): Promise<ApproveItem> {
+    const response = await axios.patch(`/approve/${id}/reject`, rejectDto); 
     return response.data;
   },
 

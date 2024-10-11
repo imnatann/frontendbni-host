@@ -6,7 +6,7 @@ import { Breadcrumb, Card, Divider, Flex, Typography } from "antd";
  import {  
   HomeOutlined,  
 } from "@ant-design/icons";  
-import TableVendor from "./Components/TableVendor";
+import TableVendor from "./Components/TableDocVendor";
 
 const { Title } = Typography;  
 

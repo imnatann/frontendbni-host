@@ -1,9 +1,9 @@
 import { getBrand, getBrandType } from "@smpm/services/edcService"
 import { useQuery } from "@tanstack/react-query"
 import { Col, Form, Input, Row, Select } from "antd"
-import React, { useState } from "react"
+import { useState } from "react"
 
-const { Option } = Select
+// const { Option } = Select
 
 export type FormFieldSerialNumberEDCProps = {
 	brand: string
@@ -21,7 +21,7 @@ const FormFieldSerialNumberEDC = () => {
 		queryFn: () => getBrand(),
 	})
 
-	const { data: brandType, isLoading: isLoadingBrandType } = useQuery({
+	const { data: brandType, isLoading: _isLoadingBrandType } = useQuery({
 		queryKey: ["select-brand-type", selectedBrand],
 		queryFn: () =>
 			getBrandType({
