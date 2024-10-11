@@ -13,7 +13,11 @@ export type FormFieldSerialNumberSecondEDCProps = {
 	action_second: string
 }
 
-const FormFieldReceivedOutEDC = () => {
+type FormFieldReceivedOutEDCProps = {
+  isRequired: boolean;
+};
+
+const FormFieldReceivedOutEDC:React.FC<FormFieldReceivedOutEDCProps> = ({ isRequired }) => {
 	const [selectedBrand, setSelectedBrand] = useState("")
 
 	const { data: brand, isLoading: isLoadingBrand } = useQuery({
@@ -35,7 +39,7 @@ const FormFieldReceivedOutEDC = () => {
 				<Form.Item
 					label={"Merk EDC"}
 					name={"edc_second_brand"}
-					rules={[{ required: true, message: "Dibutuhkan" }]}
+					rules={[{ required: isRequired, message: "Dibutuhkan" }]}
 				>
 					<Select
 						loading={isLoadingBrand}
@@ -55,7 +59,7 @@ const FormFieldReceivedOutEDC = () => {
 				<Form.Item
 					label={"Tipe EDC"}
 					name={"edc_second_brand_type"}
-					rules={[{ required: true, message: "Dibutuhkan" }]}
+					rules={[{ required: isRequired, message: "Dibutuhkan" }]}
 				>
 					<Select loading={isLoadingBrand} virtual={true} allowClear>
 						{brandType?.result.map((item: any) => (
@@ -68,7 +72,7 @@ const FormFieldReceivedOutEDC = () => {
 				<Form.Item
 					label={"Serial Number"}
 					name={"edc_second_serial_number"}
-					rules={[{ required: true, message: "Dibutuhkan" }]}
+					rules={[{ required: isRequired, message: "Dibutuhkan" }]}
 				>
 					<Input />
 				</Form.Item>

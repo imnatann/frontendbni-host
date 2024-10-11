@@ -10,8 +10,7 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
     return `${day}/${month}/${year}`;  
   };  
 
-  const displayValue = (value: string | null | undefined | "" | " " | "undefined" | "null") => (value && value.trim() !== "") ? value : "-";  
-
+  const displayValue = (value: string | null | undefined | "" | " " | "undefined" | "null") => (value && value.trim() !== "") ? value : "-";
   interface CheckboxProps {  
     label: string;  
     checked: boolean;  
