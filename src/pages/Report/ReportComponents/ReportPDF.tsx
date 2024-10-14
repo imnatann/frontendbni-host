@@ -285,7 +285,7 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
             </View>
 
             {/* Keterangan */}
-            <View style={{ flexDirection: "row" }}>
+            <View style={{ flexDirection: "row", marginTop: 10}}>
               <Text style={{ fontWeight: "bold" }}>Keterangan </Text>
               <Text style={{ marginLeft: 80 }}>{": " + formatValue(data.information)}</Text>
             </View>

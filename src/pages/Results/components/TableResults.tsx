@@ -79,24 +79,10 @@ const Results: React.FC<ITableActivityJobOrderProps> = ({
 					},
 				},
 				{
-					title: "PETUGAS",
+					title: "NAMA MERCHANT",
+					dataIndex: "merchant_name",
 					sorter: true,
 					sortDirections: ["descend", "ascend"],
-					render: (record) => {
-						return (
-							<>
-								<span>{record.officer_name}</span>
-							</>
-						)
-					},
-				},
-				{
-					title: "WILAYAH",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-					render: (record) => {
-						return record.region.name
-					},
 				},
 				{
 					title: "VENDOR",
@@ -113,67 +99,6 @@ const Results: React.FC<ITableActivityJobOrderProps> = ({
 					sortDirections: ["descend", "ascend"],
 					render: (date) => {
 						return dayjs(date).format("DD-MMM-YYYY")
-					},
-				},
-				{
-					title: "MID",
-					dataIndex: "mid",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "TID",
-					dataIndex: "tid",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "NAMA MERCHANT",
-					dataIndex: "merchant_name",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "ADDRESS 1",
-					dataIndex: "address1",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "ADDRESS 2",
-					dataIndex: "address2",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "ADDRESS 3",
-					dataIndex: "address3",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "ADDRESS 4",
-					dataIndex: "address4",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "KATEGORI MERCHANT",
-					dataIndex: "merchant_category",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-				},
-				{
-					title: "KATEGORI SEWA/MILIK",
-					dataIndex: "ownership",
-					sorter: true,
-					sortDirections: ["descend", "ascend"],
-					render: (ownership) => {
-						return ownership == "Milik" ? (
-							<Badge key="orange" color="orange" text={ownership} />
-						) : (
-							<Badge key="cyan" color="cyan" text={ownership} />
-						)
 					},
 				},
 				{
@@ -216,36 +141,12 @@ const Results: React.FC<ITableActivityJobOrderProps> = ({
 					value: "type",
 				},
 				{
-					name: "Wilayah",
-					value: "region.name",
-				},
-				{
-					name: "Vendor",
-					value: "vendor.name",
-				},
-				{
-					name: "MID",
-					value: "mid",
-				},
-				{
-					name: "TID",
-					value: "tid",
-				},
-				{
 					name: "Nama Merchant",
 					value: "merchant_name",
 				},
 				{
-					name: "TID",
-					value: "tid",
-				},
-				{
-					name: "Kategori Merchant",
-					value: "merchant_category",
-				},
-				{
-					name: "Kategori Sewa/Milik",
-					value: "ownership",
+					name: "Vendor",
+					value: "vendor.name",
 				},
 			]}
 			onGlobalSearch={onSearch}
@@ -253,7 +154,7 @@ const Results: React.FC<ITableActivityJobOrderProps> = ({
 			useGlobalSearchInput
 			onChange={onChangeTable}
 			scroll={{
-				x: 3000,
+				x: 1000,
 			}}
 		/>
 	)
