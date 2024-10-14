@@ -22,6 +22,7 @@ export interface IJobOrderReportModel {
   id: number;
   job_order_no: string;
   status: string;
+  reason?: string;
   edc_brand: string;
   edc_brand_type: string;
   edc_serial_number: string;
@@ -70,10 +71,29 @@ export interface ReportPDFProps {
     job_order_no: string;  
     job_order: {  
       merchant_name: string;  
+      vendor: {
+        name: string;
+      }
+      mid: string;
       target_date: string;  
       type: string;  
       tid: string;  
       case_type: string;  
+      city: string;
+      merchant: {
+        mid: string;
+        address1: string;
+        address2: string;
+        address3: string;
+        address4: string;
+        city: string;
+        province: string;
+        postal_code: string;
+        village: string;
+        customer_name: string;
+        phone1: string;
+        phone2: string;
+      }
     };  
     products: {  
       name: string;  
@@ -93,6 +113,9 @@ export interface ReportPDFProps {
     merchant_pic: string;  
     merchant_pic_phone: string;  
     swipe_cash_indication: string;  
+    information: string;
+    reason: string;
+    info_remark: string;
     dongle: {  
       battery_cover: boolean;  
       battery: boolean;  
@@ -142,11 +165,18 @@ export interface ReportPDFProps {
       first_level_maintenance: boolean;  
       transaction_receipt_storage: boolean;  
     };  
-    images: {  
-      media: {  
-        path: string;  
-      };  
-    }[];  
+    proofOfVisitImages: ProofOfVisitImage[];  
+    optionalPhotos: OptionalImage[];  
   };  
-}
+}  
 
+interface ProofOfVisitImage {  
+  media: {  
+    path: string;  
+  };  
+}  
+interface OptionalImage {  
+  media: {  
+    path: string;  
+  };  
+}  

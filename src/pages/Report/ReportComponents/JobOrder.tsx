@@ -174,10 +174,17 @@ function JobOrder() {
         dataIndex: "status_approve",  
         sorter: true,  
         sortDirections: ["descend", "ascend"],  
-        render: (status: "Waiting" | "Approved" | "Rejected") => (  
-          <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
-            {status}  
-          </Tag>  
+        render: (status: "Waiting" | "Approved" | "Rejected", record) => (  
+          <div>   
+            <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
+              {status}  
+            </Tag>  
+            {status === "Rejected" && (  
+              <div className="mt-2 text-gray-400 text-xs">  
+                {record.reason}  
+              </div>  
+            )}  
+          </div>  
         ),  
       },  
       {  
@@ -193,120 +200,149 @@ function JobOrder() {
     ];  
   }, []);  
 
-  const handleDownload = async (record: any) => {  
-    try {  
-       const requiredProperties = [  
-        'job_order',  
-        'JobOrderReportEdcEquipmentDongle',  
-        'JobOrderReportMaterialPromo',  
-        'JobOrderReportMaterialTraining',  
-        'MediaJobOrderReportProofOfVisit',  
-        'MediaJobOrderReportOptionalPhoto'  
-      ];  
-  
-      const missingProperties = requiredProperties.filter(prop => !record[prop]);  
-  
-      if (missingProperties.length > 0) {  
-        console.error("Record is missing required properties:", missingProperties, record);  
-        alert(`Unable to generate report. Missing properties: ${missingProperties.join(', ')}`);  
-        return;  
-      }  
-  
-      const transformedData = {  
-        job_order_no: record.job_order_no || '',  
-        job_order: {  
-          merchant_name: record.job_order?.merchant_name || '',  
-          target_date: record.job_order?.date || '',  
-          type: record.job_order?.type || '',  
-          tid: record.job_order?.tid || '',  
-          case_type: record.job_order?.case_type || '',  
-        },  
-        products: [  
-          {  
-            name: record.edc_brand || '',  
-            serial_number: record.edc_serial_number || '',  
-            notes: record.edc_note || '',  
-            action: record.edc_action || '',  
+    const handleDownload = async (record: any) => {  
+      try {  
+        const requiredProperties = [  
+          'job_order',  
+          'JobOrderReportEdcEquipmentDongle',  
+          'JobOrderReportMaterialPromo',  
+          'JobOrderReportMaterialTraining',  
+          'MediaJobOrderReportProofOfVisit',  
+          'MediaJobOrderReportOptionalPhoto'  
+        ];  
+    
+        const missingProperties = requiredProperties.filter(prop => !record[prop]);  
+    
+        if (missingProperties.length > 0) {  
+          console.error("Record is missing required properties:", missingProperties, record);  
+          alert(`Unable to generate report. Missing properties: ${missingProperties.join(', ')}`);  
+          return;  
+        }  
+    
+        const transformedData = {  
+          job_order_no: record.job_order_no || '',  
+          job_order: {  
+              merchant_name: record.job_order?.merchant_name || '',  
+              target_date: record.job_order?.date || '',  
+              mid: record.job_order?.mid || '',  
+              type: record.job_order?.type || '',  
+              tid: record.job_order?.tid || '',  
+              case_type: record.job_order?.case_type || '',  
+              city: record.job_order?.city || '',  
+              vendor: {  
+                  name: record.job_order?.vendor?.name || '',    
+              },  
+              merchant: {  
+                  mid: record.job_order?.merchant?.mid || '',    
+                  address1: record.job_order?.merchant?.address1 || '',  
+                  address2: record.job_order?.merchant?.address2 || '',  
+                  address3: record.job_order?.merchant?.address3 || '',  
+                  address4: record.job_order?.merchant?.address4 || '',  
+                  city: record.job_order?.merchant?.city || '',  
+                  province: record.job_order?.merchant?.province || '',  
+                  postal_code: record.job_order?.merchant?.postal_code || '',  
+                  village: record.job_order?.merchant?.village || '',  
+                  customer_name: record.job_order?.merchant?.customer_name || '',  
+                  phone1: record.job_order?.merchant?.phone1 || '',  
+                  phone2: record.job_order?.merchant?.phone2 || '',  
+              }  
           },  
-        ],  
-        status: record.status || '',  
-        status_approve: record.status_approve || '',  
-        arrival_time: record.arrival_time || null,  
-        start_time: record.start_time || null,  
-        end_time: record.end_time || null,  
-        communication_line: record.communication_line || '',  
-        direct_line_number: record.direct_line_number || '',  
-        simcard_provider: record.simcard_provider || '',  
-        paper_supply: record.paper_supply || '',  
-        merchant_pic: record.merchant_pic || '',  
-        merchant_pic_phone: record.merchant_pic_phone || '',  
-        swipe_cash_indication: record.swipe_cash_indication || '',  
-        dongle: {  
-          battery_cover: record.JobOrderReportEdcEquipmentDongle[0]?.battery_cover || false,  
-          battery: record.JobOrderReportEdcEquipmentDongle[0]?.battery || false,  
-          edc_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.edc_adapter || false,  
-          edc_bracket: record.JobOrderReportEdcEquipmentDongle[0]?.edc_bracket || false,  
-          edc_holder: record.JobOrderReportEdcEquipmentDongle[0]?.edc_holder || false,  
-          dongle_holder: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_holder || false,  
-          dongle_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_adapter || false,  
-          cable_ecr: record.JobOrderReportEdcEquipmentDongle[0]?.cable_ecr || false,  
-          cable_lan: record.JobOrderReportEdcEquipmentDongle[0]?.cable_lan || false,  
-          cable_telephone_line: record.JobOrderReportEdcEquipmentDongle[0]?.cable_telephone_line || false,  
-          mid_tid: record.JobOrderReportEdcEquipmentDongle[0]?.mid_tid || false,  
-          magic_box: record.JobOrderReportEdcEquipmentDongle[0]?.magic_box || false,  
-          transaction_guide: record.JobOrderReportEdcEquipmentDongle[0]?.transaction_guide || false,  
-          pin_cover: record.JobOrderReportEdcEquipmentDongle[0]?.pin_cover || false,  
-          telephone_line_splitter: record.JobOrderReportEdcEquipmentDongle[0]?.telephone_line_splitter || false,  
-          sticker_bank: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_bank || false,  
-          sticer_dongle: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_dongle || false,  
-          sticer_gpn: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_gpn || false,  
-          sticker_qrcode: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_qrcode || false,  
-        },  
-        promo_materials: {  
-          flyer: record.JobOrderReportMaterialPromo[0]?.flyer || false,  
-          tent_card: record.JobOrderReportMaterialPromo[0]?.tent_card || false,  
-          holder_card: record.JobOrderReportMaterialPromo[0]?.holder_card || false,  
-          holder_pen: record.JobOrderReportMaterialPromo[0]?.holder_pen || false,  
-          holder_bill: record.JobOrderReportMaterialPromo[0]?.holder_bill || false,  
-          sign_pad: record.JobOrderReportMaterialPromo[0]?.sign_pad || false,  
-          pen: record.JobOrderReportMaterialPromo[0]?.pen || false,  
-          acrylic_open_close: record.JobOrderReportMaterialPromo[0]?.acrylic_open_close || false,  
-          logo_sticker: record.JobOrderReportMaterialPromo[0]?.logo_sticker || false,  
-          banner: record.JobOrderReportMaterialPromo[0]?.banner || false,  
-        },  
-        training_materials: {  
-          fraud_awareness: record.JobOrderReportMaterialTraining[0]?.fraud_awareness || false,  
-          sale_void_settlement_logon: record.JobOrderReportMaterialTraining[0]?.sale_void_settlement_logon || false,  
-          installment: record.JobOrderReportMaterialTraining[0]?.installment || false,  
-          audit_report: record.JobOrderReportMaterialTraining[0]?.audit_report || false,  
-          top_up: record.JobOrderReportMaterialTraining[0]?.top_up || false,  
-          redeem_point: record.JobOrderReportMaterialTraining[0]?.redeem_point || false,  
-          cardverif_preauth_offline: record.JobOrderReportMaterialTraining[0]?.cardverif_preauth_offline || false,  
-          manual_key_in: record.JobOrderReportMaterialTraining[0]?.manual_key_in || false,  
-          tips_adjust: record.JobOrderReportMaterialTraining[0]?.tips_adjust || false,  
-          mini_atm: record.JobOrderReportMaterialTraining[0]?.mini_atm || false,  
-          fare_non_fare: record.JobOrderReportMaterialTraining[0]?.fare_non_fare || false,  
-          dcc_download_bin: record.JobOrderReportMaterialTraining[0]?.dcc_download_bin || false,  
-          first_level_maintenance: record.JobOrderReportMaterialTraining[0]?.first_level_maintenance || false,  
-          transaction_receipt_storage: record.JobOrderReportMaterialTraining[0]?.transaction_receipt_storage || false,  
-        },  
-        images: [  
-          ...record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
-            media: { path: media.media.path },  
+          products: [  
+            {  
+              name: record.edc_brand || '',  
+              serial_number: record.edc_serial_number || '',  
+              notes: record.edc_note || '',  
+              action: record.edc_action || '',  
+            },  
+          ],  
+          status: record.status || '',  
+          status_approve: record.status_approve || '',  
+          arrival_time: record.arrival_time || null,  
+          start_time: record.start_time || null,  
+          end_time: record.end_time || null,  
+          communication_line: record.communication_line || '',  
+          direct_line_number: record.direct_line_number || '',  
+          simcard_provider: record.simcard_provider || '',  
+          paper_supply: record.paper_supply || '',  
+          merchant_pic: record.merchant_pic || '',  
+          merchant_pic_phone: record.merchant_pic_phone || '',  
+          swipe_cash_indication: record.swipe_cash_indication || '',  
+          information: record.information || '',
+          reason: record.reason || '',
+          info_remark: record.info_remark || '',
+          dongle: {  
+            battery_cover: record.JobOrderReportEdcEquipmentDongle[0]?.battery_cover || false,  
+            battery: record.JobOrderReportEdcEquipmentDongle[0]?.battery || false,  
+            edc_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.edc_adapter || false,  
+            edc_bracket: record.JobOrderReportEdcEquipmentDongle[0]?.edc_bracket || false,  
+            edc_holder: record.JobOrderReportEdcEquipmentDongle[0]?.edc_holder || false,  
+            dongle_holder: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_holder || false,  
+            dongle_adapter: record.JobOrderReportEdcEquipmentDongle[0]?.dongle_adapter || false,  
+            cable_ecr: record.JobOrderReportEdcEquipmentDongle[0]?.cable_ecr || false,  
+            cable_lan: record.JobOrderReportEdcEquipmentDongle[0]?.cable_lan || false,  
+            cable_telephone_line: record.JobOrderReportEdcEquipmentDongle[0]?.cable_telephone_line || false,  
+            mid_tid: record.JobOrderReportEdcEquipmentDongle[0]?.mid_tid || false,  
+            magic_box: record.JobOrderReportEdcEquipmentDongle[0]?.magic_box || false,  
+            transaction_guide: record.JobOrderReportEdcEquipmentDongle[0]?.transaction_guide || false,  
+            pin_cover: record.JobOrderReportEdcEquipmentDongle[0]?.pin_cover || false,  
+            telephone_line_splitter: record.JobOrderReportEdcEquipmentDongle[0]?.telephone_line_splitter || false,  
+            sticker_bank: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_bank || false,  
+            sticer_dongle: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_dongle || false,  
+            sticer_gpn: record.JobOrderReportEdcEquipmentDongle[0]?.sticer_gpn || false,  
+            sticker_qrcode: record.JobOrderReportEdcEquipmentDongle[0]?.sticker_qrcode || false,  
+          },  
+          promo_materials: {  
+            flyer: record.JobOrderReportMaterialPromo[0]?.flyer || false,  
+            tent_card: record.JobOrderReportMaterialPromo[0]?.tent_card || false,  
+            holder_card: record.JobOrderReportMaterialPromo[0]?.holder_card || false,  
+            holder_pen: record.JobOrderReportMaterialPromo[0]?.holder_pen || false,  
+            holder_bill: record.JobOrderReportMaterialPromo[0]?.holder_bill || false,  
+            sign_pad: record.JobOrderReportMaterialPromo[0]?.sign_pad || false,  
+            pen: record.JobOrderReportMaterialPromo[0]?.pen || false,  
+            acrylic_open_close: record.JobOrderReportMaterialPromo[0]?.acrylic_open_close || false,  
+            logo_sticker: record.JobOrderReportMaterialPromo[0]?.logo_sticker || false,  
+            banner: record.JobOrderReportMaterialPromo[0]?.banner || false,  
+          },  
+          training_materials: {  
+            fraud_awareness: record.JobOrderReportMaterialTraining[0]?.fraud_awareness || false,  
+            sale_void_settlement_logon: record.JobOrderReportMaterialTraining[0]?.sale_void_settlement_logon || false,  
+            installment: record.JobOrderReportMaterialTraining[0]?.installment || false,  
+            audit_report: record.JobOrderReportMaterialTraining[0]?.audit_report || false,  
+            top_up: record.JobOrderReportMaterialTraining[0]?.top_up || false,  
+            redeem_point: record.JobOrderReportMaterialTraining[0]?.redeem_point || false,  
+            cardverif_preauth_offline: record.JobOrderReportMaterialTraining[0]?.cardverif_preauth_offline || false,  
+            manual_key_in: record.JobOrderReportMaterialTraining[0]?.manual_key_in || false,  
+            tips_adjust: record.JobOrderReportMaterialTraining[0]?.tips_adjust || false,  
+            mini_atm: record.JobOrderReportMaterialTraining[0]?.mini_atm || false,  
+            fare_non_fare: record.JobOrderReportMaterialTraining[0]?.fare_non_fare || false,  
+            dcc_download_bin: record.JobOrderReportMaterialTraining[0]?.dcc_download_bin || false,  
+            first_level_maintenance: record.JobOrderReportMaterialTraining[0]?.first_level_maintenance || false,  
+            transaction_receipt_storage: record.JobOrderReportMaterialTraining[0]?.transaction_receipt_storage || false,  
+          },  
+          proofOfVisitImages: record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media_id: media.media.id,  
+            media: { path: `http://localhost:46/media/${media.media.id}` },  
           })),  
-          ...record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
-            media: { path: media.media.path },  
-          })),  
-        ],  
-      };
-  
+          optionalPhotos: record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+            media_id: media.media.id,  
+            media: { path: `http://localhost:46/media/${media.media.id}` },  
+          })),
+        };
+    
+        if (transformedData.proofOfVisitImages.length === 0) {  
+          console.warn("No proof of visit images found.");  
+        }  
+        if (transformedData.optionalPhotos.length === 0) {  
+          console.warn("No optional photos found.");  
+        }  
+
       const blob = await pdf(<ReportPDF data={transformedData} />).toBlob();  
-    saveAs(blob, `${record.job_order_no}_Report.pdf`);  
-  } catch (error) {  
-    console.error("Error generating PDF report:", error);  
-    alert("An error occurred while generating the report. Please try again.");  
-  }  
-  };  
+      saveAs(blob, `${record.job_order_no}_Report.pdf`);  
+    } catch (error) {  
+      console.error("Error generating PDF report:", error);  
+      alert("An error occurred while generating the report. Please try again.");  
+    }  
+    };  
   
   return (  
     <>  

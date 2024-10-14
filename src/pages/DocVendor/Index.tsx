@@ -31,14 +31,14 @@ const FileIcon = () => (
 
 const Vendor = () => {  
   return (  
-    <Page title={"Vendor"}>  
+    <Page title={"Document Vendor"}>  
       <PageLabel  
         title={<span className="font-semibold text-2xl">Document Vendor</span>}  
         subtitle={  
           <Breadcrumb  
             items={[  
               {  
-                href: "/",  
+                href: "/dashboard",  
                 title: (  
                   <>  
                     <HomeOutlined />  
@@ -47,17 +47,16 @@ const Vendor = () => {
                 ),  
               },  
               {  
-                href: "/",  
+                href: "#",  
                 title: (  
                   <div className="flex gap-1">  
                     <FileIcon />  
-                    <span>Document Vendor</span>  
+                    <span>Document</span>  
                   </div>  
                 ),  
               },  
               {  
-                href: "/",  
-                title: "Vendor",  
+                 title: "Document Vendor",  
               },  
             ]}  
           />  

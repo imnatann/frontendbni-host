@@ -30,7 +30,7 @@ const FileIcon = () => (
 
 const Merchant = () => {  
   return (  
-    <Page title={"Merchant"}>  
+    <Page title={"Document Merchant"}>  
       <PageLabel  
         title={<span className="font-semibold text-2xl">Document Merchant</span>}  
         subtitle={  
@@ -50,13 +50,12 @@ const Merchant = () => {
                   title: (
                     <div className="flex gap-1">
                       <FileIcon/>
-                      <span>Document Merchant</span>
+                      <span>Document</span>
                     </div>
                   ),
                 },
                 {
-                  href: "#",
-                  title: "Merchant",
+                  title: "Document Merchant",
                 },
               ]}
             />

@@ -29,6 +29,17 @@ export const getActivityJobOrder = async (
 	return response.data
 }
 
+export const fetchMedia = async (id: string) => {  
+	try {  
+	  const response = await axios.get(`/media/${id}`);  
+	  return response.data;  
+	} catch (error) {  
+	  console.error("Error fetching media:", error);  
+	  throw error;  
+	}  
+  };  
+  
+
 export const getDoneActivityJobOrder = async (  
 	param: IPaginationRequest  
   ): Promise<IBaseResponseService<IPaginationResponse<IJobOrderModel>>> => {  

@@ -40,7 +40,7 @@ const Region = () => {
 					<Breadcrumb
 						items={[
 							{
-								href: "/",
+								href: "/dashboard",
 								title: (
 									<>
 										<HomeOutlined />
@@ -52,7 +52,7 @@ const Region = () => {
 								title: (
 									<div className="flex gap-1">
 										<IconUsersGroup size="1rem" />
-										<span>Menu Management</span>
+										<span>User Management</span>
 									</div>
 								),
 							},

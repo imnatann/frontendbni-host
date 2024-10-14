@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, List, message, Modal, Input } from "antd";
+import { Button, List, message, Modal, Input, Form } from "antd";
 import { ApproveItem } from "@smpm/models/approveModel";
 import { approveService } from "@smpm/services/approveService";
 
@@ -18,6 +18,7 @@ const ListNeedApproval: React.FC<ListNeedApprovalProps> = ({
   const [currentItem, setCurrentItem] = useState<ApproveItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const [form] = Form.useForm();
 
   const handleApprove = async (id: number) => {
     try {
@@ -29,34 +30,30 @@ const ListNeedApproval: React.FC<ListNeedApprovalProps> = ({
     }
   };
 
-  const handleReject = (item: ApproveItem) => {  
-    // Initialize currentItem with empty reason and info_remark  
-    setCurrentItem({  
-      ...item,  
-      reason: "",  // Initialize reason  
-      info_remark: "",  // Initialize info_remark  
-    });  
-    setRejectModalVisible(true);  
-  };  
-  
-  const handleRejectConfirm = async () => {  
-    if (currentItem) {  
-      try {  
-        // Ensure you are sending the correct payload  
-        const rejectDto = {  
-          reason: currentItem.reason,  
-          info_remark: currentItem.info_remark,  
-        };  
-  
-        await approveService.rejectedItem(currentItem.id, rejectDto); // Pass the rejectDto  
-        message.success(`Item with TID ${currentItem.jobOrder.tid} rejected`);  
-        setRejectModalVisible(false);  
-        setCurrentItem(null);  
-        onApprove();  
-      } catch (error) {  
-        message.error("Failed to reject item");  
-      }  
-    }  
+  const handleReject = (item: ApproveItem) => {
+    setCurrentItem(item);
+    setRejectModalVisible(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    if (currentItem) {
+      try {
+        const { reason, info_remark } = await form.validateFields();
+        const rejectDto = {
+          reason,
+          info_remark,
+        };
+
+        await approveService.rejectedItem(currentItem.id, rejectDto);
+        message.success(`Item with TID ${currentItem.jobOrder.tid} rejected`);
+        setRejectModalVisible(false);
+        setCurrentItem(null);
+        form.resetFields();
+        onApprove();
+      } catch (error) {
+        message.error("Failed to reject item");
+      }
+    }
   };
 
   const handleApproveAll = async () => {
@@ -146,39 +143,38 @@ const ListNeedApproval: React.FC<ListNeedApprovalProps> = ({
         </div>
       )}
 
-{currentItem && (  
-  <Modal  
-    visible={rejectModalVisible}  
-    onCancel={() => setRejectModalVisible(false)}  
-    onOk={handleRejectConfirm}  
-    title="Reject Item"  
-  >  
-    <div className="space-y-4">  
-      <div>  
-        <div className="font-semibold">Reason</div>  
-        <Input  
-          value={currentItem.reason}  // This should reflect the current state  
-          onChange={(e) =>  
-            setCurrentItem({ ...currentItem, reason: e.target.value })  // Update state on change  
-          }  
-        />  
-      </div>  
-      <div>  
-        <div className="font-semibold">Info Remark</div>  
-        <TextArea  
-          rows={3}  
-          value={currentItem.info_remark}  // This should reflect the current state  
-          onChange={(e) =>  
-            setCurrentItem({  
-              ...currentItem,  
-              info_remark: e.target.value,  // Update state on change  
-            })  
-          }  
-        />  
-      </div>  
-    </div>  
-  </Modal>  
-)}
+      <Modal
+        visible={rejectModalVisible}
+        onCancel={() => {
+          setRejectModalVisible(false);
+          form.resetFields();
+        }}
+        onOk={handleRejectConfirm}
+        title="Reject Item"
+        okText="Confirm"
+        cancelText="Cancel"
+        width={500}
+        centered
+      >
+        <Form form={form} layout="vertical" requiredMark={false}>
+          <Form.Item
+            name="reason"
+            label="Reason"
+            rules={[{ required: true, message: "Please input the reason" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="info_remark"
+            label="Info Remark"
+            rules={[
+              { required: true, message: "Please input the info remark" },
+            ]}
+          >
+            <TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

@@ -16,7 +16,7 @@ import { getAllRegion } from "@smpm/services/regionService";
 import { IPaginationRequest } from "@smpm/models";  
 import { getPMReports } from "@smpm/services/pmReportService";
 import { IPreventiveMaintenanceReportModel } from "@smpm/models/pmReportModel";
-
+ 
 const { Title } = Typography;  
 const { RangePicker } = DatePicker;  
 
@@ -174,10 +174,17 @@ function PreventiveMaintenance() {
         dataIndex: "status_approve",  
         sorter: true,  
         sortDirections: ["descend", "ascend"],  
-        render: (status: "Waiting" | "Approved" | "Rejected") => (  
-          <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
-            {status}  
-          </Tag>  
+        render: (status: "Waiting" | "Approved" | "Rejected", record) => (  
+          <div>  
+            <Tag color={status === "Waiting" ? "blue" : status === "Approved" ? "green" : "red"}>  
+              {status}  
+            </Tag>  
+            {status === "Rejected" && (  
+              <div className="mt-2 text-gray-400 text-xs">  
+                {record.reason}  
+              </div>  
+            )}  
+          </div>  
         ),  
       },  
       {  
@@ -217,10 +224,29 @@ function PreventiveMaintenance() {
         job_order: {  
           merchant_name: record.job_order?.merchant_name || '',  
           target_date: record.job_order?.date || '',  
+          mid: record.job_order?.mid || '',  
           type: record.job_order?.type || '',  
           tid: record.job_order?.tid || '',  
           case_type: record.job_order?.case_type || '',  
-        },  
+          city: record.job_order?.city || '',  
+          vendor: {  
+              name: record.job_order?.vendor?.name || '',    
+          },  
+          merchant: {  
+              mid: record.job_order?.merchant?.mid || '',    
+              address1: record.job_order?.merchant?.address1 || '',  
+              address2: record.job_order?.merchant?.address2 || '',  
+              address3: record.job_order?.merchant?.address3 || '',  
+              address4: record.job_order?.merchant?.address4 || '',  
+              city: record.job_order?.merchant?.city || '',  
+              province: record.job_order?.merchant?.province || '',  
+              postal_code: record.job_order?.merchant?.postal_code || '',  
+              village: record.job_order?.merchant?.village || '',  
+              customer_name: record.job_order?.merchant?.customer_name || '',  
+              phone1: record.job_order?.merchant?.phone1 || '',  
+              phone2: record.job_order?.merchant?.phone2 || '',  
+          }  
+      },  
         products: [  
           {  
             name: record.edc_brand || '',  
@@ -241,6 +267,9 @@ function PreventiveMaintenance() {
         merchant_pic: record.merchant_pic || '',  
         merchant_pic_phone: record.merchant_pic_phone || '',  
         swipe_cash_indication: record.swipe_cash_indication || '',  
+        information: record.information || '',
+        reason: record.reason || '',
+        info_remark: record.info_remark || '',
         dongle: {  
           battery_cover: record.JobOrderReportEdcEquipmentDongle[0]?.battery_cover || false,  
           battery: record.JobOrderReportEdcEquipmentDongle[0]?.battery || false,  
@@ -290,14 +319,14 @@ function PreventiveMaintenance() {
           first_level_maintenance: record.JobOrderReportMaterialTraining[0]?.first_level_maintenance || false,  
           transaction_receipt_storage: record.JobOrderReportMaterialTraining[0]?.transaction_receipt_storage || false,  
         },  
-        images: [  
-          ...record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
-            media: { path: media.media.path },  
-          })),  
-          ...record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
-            media: { path: media.media.path },  
-          })),  
-        ],  
+        proofOfVisitImages: record.MediaJobOrderReportProofOfVisit.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+          media_id: media.media.id,  
+          media: { path: `http://localhost:46/media/${media.media.id}` },  
+        })),  
+        optionalPhotos: record.MediaJobOrderReportOptionalPhoto.filter((media: any) => media.media && media.media.path).map((media: any) => ({  
+          media_id: media.media.id,  
+          media: { path: `http://localhost:46/media/${media.media.id}` },  
+        })),
       };
   
       const blob = await pdf(<ReportPDF data={transformedData} />).toBlob();  

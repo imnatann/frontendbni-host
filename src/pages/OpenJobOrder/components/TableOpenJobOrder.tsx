@@ -15,7 +15,7 @@ interface ITableOpenJobOrderProps {
 
 const TableOpenJobOrder: React.FC<ITableOpenJobOrderProps> = ({ filter }) => {
 	const { tableFilter, onChangeTable, onChangeSearchBy } =
-		useTableHelper<IJobOrderModel>()
+		useTableHelper<IJobOrderModel>({pagination : true})
 
 	const [search, setSearch] = useState<string>("")
 
@@ -35,8 +35,8 @@ const TableOpenJobOrder: React.FC<ITableOpenJobOrderProps> = ({ filter }) => {
 				order_by: tableFilter.sort.order_by,
 				search: searchValue,
 				search_by: tableFilter.searchBy,
-				page: parseInt(tableFilter.pagination.current),
-				take: parseInt(tableFilter.pagination.pageSize),
+				page: Number(tableFilter.pagination.current),
+				take: Number(tableFilter.pagination.pageSize),
 				...filter,
 			}),
 	})

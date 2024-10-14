@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import JobOrder from "./ReportComponents/JobOrder";
 import PreventiveMaintenance from "./ReportComponents/PreventiveMaintenance";
 import Inventory from "./ReportComponents/Inventory";
+import Page from "@smpm/components/pageTitle";
 
 function Report() {
   const [tabActive, setTabActive] = useState<string>("1");
@@ -26,6 +27,7 @@ function Report() {
   };
 
   return (
+    <Page title={"Report"}>  
     <Layout
       style={{
         backgroundColor: "white",
@@ -43,6 +45,7 @@ function Report() {
         <Typography>Invalid Tab</Typography>
       )}
     </Layout>
+    </Page>
   );
 }
 

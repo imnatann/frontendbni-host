@@ -74,7 +74,7 @@ const Approve: React.FC = () => {
           <Breadcrumb
             items={[
               {
-                href: "/",
+                href: "/dashboard",
                 title: (
                   <>
                     <HomeOutlined />
@@ -83,7 +83,7 @@ const Approve: React.FC = () => {
                 ),
               },
               {
-                href: "/",
+                href: "#",
                 title: (
                   <div className="flex gap-1">
                     <CheckSquareOutlined  className='mb-1'/>

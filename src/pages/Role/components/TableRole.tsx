@@ -16,7 +16,7 @@ const { Option } = Select;
 
 const TableRole: React.FC = () => {
   const [form] = Form.useForm();
-  const { onChangeTable, onChangeSearchBy } = useTableHelper<IRoleModel>()
+  const { onChangeTable, onChangeSearchBy } = useTableHelper<IRoleModel>({pagination: true})
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState<string>("")
@@ -90,7 +90,7 @@ const TableRole: React.FC = () => {
          if (response && response.result) {  
           message.success('Role updated successfully');  
           setIsModalVisible(false);  
-          fetchRoles();  
+          getRole;  
         } else {  
            throw new Error(response.message || 'Update failed: Unexpected response format');  
         }  

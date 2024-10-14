@@ -41,7 +41,7 @@ function getItem(
 const items: MenuItem[] = [  
   getItem("Dashboard", "dashboard", <IconChartInfographic size="1.2rem" />),  
   getItem(  
-    "Menu Management",  
+    "User Management",  
     "menu-management",  
     <IconUsersGroup size="1.2rem" />,  
     [  
