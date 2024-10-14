@@ -9,8 +9,7 @@ export type IStatusCode = {
 
 export interface IBaseResponseService<T = any | IErrorResponseService> {
 	status: IStatusCode
-	message?: string;
-	result: T
+ 	result: T
 	message?: string
 }
 

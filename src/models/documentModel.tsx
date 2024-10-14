@@ -1,9 +1,10 @@
 
-export interface DocMerchantModel {  
+export interface DocMerchantModel {
+  merchant: any;  
   id: number; 
   merchant_name: string;  
-  file1: string;  
-  file2: string;  
+  file1?: string;  
+  file2?: string;  
   location: string;  
 }  
 

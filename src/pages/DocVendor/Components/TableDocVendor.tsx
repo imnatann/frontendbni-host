@@ -1,30 +1,33 @@
-import React, { useMemo, useState } from "react";  
-import { Button, Space, Typography, Pagination } from "antd";  
+import React, { useMemo, useState, useRef } from "react";  
+import { Button, Space, Typography, Pagination, message } from "antd";  
 import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";  
 import DataTable from "@smpm/components/DataTable";  
 import { useDebounce } from "@smpm/utils/useDebounce";  
 import useTableHelper from "@smpm/utils/useTableHelper";  
 import { ColumnsType } from "antd/es/table";  
-import { useQuery } from "@tanstack/react-query";  
+import { useQuery, useQueryClient } from "@tanstack/react-query";  
 import { DocVendorModel } from "@smpm/models/documentModel";  
-import { findAll } from "@smpm/services/docvendorService";
-import { formatDateIndo } from "@smpm/utils/dateUtils";
+import { findAll, update } from "@smpm/services/docvendorService";  
+import { formatDateIndo } from "@smpm/utils/dateUtils";  
 
 const { Text } = Typography;  
 
-const TableVendor: React.FC = () => {  
+const TableDocVendor: React.FC = () => {  
   const { tableFilter, onChangeTable } = useTableHelper<DocVendorModel>({ pagination: true });  
   const [search, setSearch] = useState<string>("");  
   const searchValue = useDebounce(search, 500);  
-  const [uploadedFiles] = useState<{ [key: string]: string }>({});  
+  const [fileUploads, setFileUploads] = useState<{ [key: string]: { file: File; name: string } }>({});  
   const [currentPage, setCurrentPage] = useState<number>(1);  
-  const [pageSize, setPageSize] = useState<number>(10);   
+  const [pageSize, setPageSize] = useState<number>(10);  
+  const queryClient = useQueryClient();  
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});  
 
   const onSearch = (value: string) => setSearch(value);  
 
   const {  
     data: activityJobOrder,  
     isLoading,  
+    refetch,  
   } = useQuery({  
     queryKey: ["document-vendor", { ...tableFilter, searchValue, currentPage, pageSize }],  
     queryFn: () =>  
@@ -37,6 +40,47 @@ const TableVendor: React.FC = () => {
         take: pageSize,  
       }),  
   });  
+
+  const handleFileUpload = async (id: number, fileKey: 'file1' | 'file2') => {  
+    const file = fileUploads[`${id}-${fileKey}`]?.file;  
+    if (!file) {  
+      message.error("No file selected for upload.");  
+      return;  
+    }  
+
+    const formData = new FormData();  
+    formData.append(fileKey, file);  
+
+    try {  
+      await update(id, formData);  
+      message.success("File uploaded successfully.");  
+      setFileUploads((prev) => {  
+        const updatedFiles = { ...prev };  
+        delete updatedFiles[`${id}-${fileKey}`];  
+        return updatedFiles;  
+      });  
+      await refetch(); // Refetch the table data after successful upload  
+    } catch (error) {  
+      message.error("File upload failed.");  
+    }  
+  };  
+
+  const triggerFileInput = (recordId: number, fileKey: 'file1' | 'file2') => {  
+    const inputRef = fileInputRefs.current[`${recordId}-${fileKey}`];  
+    if (inputRef) {  
+      inputRef.click();  
+    }  
+  };  
+
+  const handleFileChange = (recordId: number, fileKey: 'file1' | 'file2', event: React.ChangeEvent<HTMLInputElement>) => {  
+    const file = event.target.files?.[0];  
+    if (file) {  
+      setFileUploads((prev) => ({  
+        ...prev,  
+        [`${recordId}-${fileKey}`]: { file, name: file.name },  
+      }));  
+    }  
+  };  
 
   const columns: ColumnsType<DocVendorModel> = useMemo(  
     (): ColumnsType<DocVendorModel> => [  
@@ -79,19 +123,28 @@ const TableVendor: React.FC = () => {
         render: (text, record) => (  
           <Space size="middle">  
             {text ? (  
-              <>
-              <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
-                Download File  
-              </Button>  
+              <>  
+                <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
+                  Download File  
+                </Button>  
                 <Text className="min-w-[100px]">{text}</Text>  
-              </>
+              </>  
             ) : (  
               <>  
-                <Button icon={<UploadOutlined />}>Choose File</Button>  
-                <Text className={uploadedFiles[`file_1_${record.name}`] ? 'font-bold' : ''}>  
-                  {uploadedFiles[`file_1_${record.name}`] || "No Choose File"}  
-                </Text>  
-                <Button type="primary" className="w-20 h-8">Save</Button>  
+                <input  
+                  type="file"  
+                  ref={(el) => fileInputRefs.current[`${record.id}-file1`] = el}  
+                  style={{ display: 'none' }}  
+                  onChange={(e) => handleFileChange(record.id, 'file1', e)}  
+                />  
+                <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file1')}>  
+                  {fileUploads[`${record.id}-file1`]?.name || "Upload File 1"}  
+                </Button>  
+                {fileUploads[`${record.id}-file1`] && (  
+                  <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file1')}>  
+                    Save  
+                  </Button>  
+                )}  
               </>  
             )}  
           </Space>  
@@ -103,38 +156,49 @@ const TableVendor: React.FC = () => {
         width: 400,  
         render: (text, record) => (  
           <Space size="middle">  
-             {text ? (  
-              <>
-              <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
-                Download File  
-              </Button>  
+            {text ? (  
+              <>  
+                <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
+                  Download File  
+                </Button>  
                 <Text className="min-w-[100px]">{text}</Text>  
-              </>
+              </>  
             ) : (  
               <>  
-                <Button icon={<UploadOutlined />}>Choose File</Button>  
-                <Text className={uploadedFiles[`file_2_${record.name}`] ? 'font-bold' : ''}>  
-                  {uploadedFiles[`file_2_${record.name}`] || "No Choose File"}  
-                </Text>  
-                <Button type="primary" className="w-20 h-8">Save</Button>  
+                <input  
+                  type="file"  
+                  ref={(el) => fileInputRefs.current[`${record.id}-file2`] = el}  
+                  style={{ display: 'none' }}  
+                  onChange={(e) => handleFileChange(record.id, 'file2', e)}  
+                />  
+                <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file2')}>  
+                  {fileUploads[`${record.id}-file2`]?.name || "Upload File 2"}  
+                </Button>  
+                {fileUploads[`${record.id}-file2`] && (  
+                  <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file2')}>  
+                    Save  
+                  </Button>  
+                )}  
               </>  
             )}  
           </Space>  
         ),  
       },  
     ],  
-    [uploadedFiles]  
+    [fileUploads]  
   );  
 
   const handlePageChange = (page: number, size?: number) => {  
     setCurrentPage(page);  
     setPageSize(size || 10);  
+    onChangeTable({ current: page, pageSize: size || 10 }, {}, { order: tableFilter.sort.order === 'desc' ? 'descend' : 'ascend', field: tableFilter.sort.order_by });  
   };  
 
   const dataSource = useMemo(() => {  
     const activityData = activityJobOrder?.result.data || [];  
     return [  
       ...activityData.map((item: any) => ({  
+        id: item.id,  
         name: item.jobOrder.no,  
         jenis_jo: item.jobOrder.type,  
         vendor_name: item.vendor.name,  
@@ -160,20 +224,20 @@ const TableVendor: React.FC = () => {
           className="overflow-x-auto"  
           onChange={onChangeTable}  
           scroll={{ x: 'max-content' }}  
-          pagination={false}   
+          pagination={false}  
         />  
       </div>  
       <div className="flex flex-col gap-4 mt-4">  
         <Pagination  
-            current={currentPage}  
-            pageSize={pageSize}  
-            total={activityJobOrder?.result.meta.item_count || 0}  
-            onChange={handlePageChange}  
-            className="self-end"  
+          current={currentPage}  
+          pageSize={pageSize}  
+          total={activityJobOrder?.result.meta.item_count || 0}  
+          onChange={handlePageChange}  
+          className="self-end"  
         />  
-        </div>  
+      </div>  
     </div>  
   );  
 };  
 
-export default TableVendor;
+export default TableDocVendor;

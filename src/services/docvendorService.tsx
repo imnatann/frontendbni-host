@@ -3,7 +3,7 @@ import {
     IPaginationRequest,
     IPaginationResponse,
   } from "@smpm/models";
-import { DocVendorModel, IUpdateDocVendorDto } from "@smpm/models/documentModel";
+import { DocVendorModel } from "@smpm/models/documentModel";
    import axios from "@smpm/services/axios";
   
   export const findAll = async (
@@ -20,11 +20,15 @@ import { DocVendorModel, IUpdateDocVendorDto } from "@smpm/models/documentModel"
   
   export const update = async (
     id: number,
-    updateApproveDto: Partial<IUpdateDocVendorDto>
+    updateApproveDto: FormData
   ): Promise<IBaseResponseService<DocVendorModel>> => {
-    const response = await axios.patch(`/document-vendor/${id}`, updateApproveDto);
+    const response = await axios.patch(`/document-vendor/${id}`, updateApproveDto, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
-  }
+  };
   
   export const remove = async (id: number): Promise<IBaseResponseService<void>> => {
     const response = await axios.delete(`/document-vendor/${id}`);

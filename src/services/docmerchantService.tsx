@@ -18,18 +18,17 @@ export const findOne = async (id: number): Promise<IBaseResponseService<DocMerch
   return response.data;  
 }  
 
-// Update function to handle file uploads  
-export const update = async (  
-  id: number,  
-  updateApproveDto: FormData // Change to FormData  
-): Promise<IBaseResponseService<DocMerchantModel>> => {  
-  const response = await axios.patch(`/document-merchant/${id}`, updateApproveDto, {  
-    headers: {  
-      'Content-Type': 'multipart/form-data', // Set the content type for file uploads  
-    },  
-  });  
-  return response.data;  
-}  
+export const update = async (
+  id: number,
+  updateApproveDto: FormData
+): Promise<IBaseResponseService<DocMerchantModel>> => {
+  const response = await axios.patch(`/document-merchant/${id}`, updateApproveDto, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
 
 export const remove = async (id: number): Promise<IBaseResponseService<void>> => {  
   const response = await axios.delete(`/document-merchant/${id}`);  
