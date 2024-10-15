@@ -1,14 +1,11 @@
 
-import React, { useCallback, useMemo, useState } from "react";
+
 import {
   DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
+  EditOutlined
 } from "@ant-design/icons";
 import DataTable from "@smpm/components/DataTable";
-import InputSearchTableView from "@smpm/components/TableView/InputSearchTableView";
 import { IMerchantModel } from "@smpm/models/merchantModel";
-import { regionSearchColumn } from "@smpm/models/regionModel";
 import {
   deleteDataMerchant,
   getDataMerchant,
@@ -16,8 +13,9 @@ import {
 import { useDebounce } from "@smpm/utils/useDebounce";
 import useTableHelper from "@smpm/utils/useTableHelper";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Card, Col, Row, Table, Button, Flex, Modal } from "antd";
+import { Button, Modal, notification } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface DataTypeNew {
@@ -49,11 +47,13 @@ const TableView: React.FC = () => {
     mutationFn: deleteDataMerchant,
   });
 
+  const [api] = notification.useNotification();
+
   const setSelectedSearchColumn = useCallback((value: any) => {
     setSearchColumn(value);
   }, []);
 
-  const { tableFilter, onChangeTable } = useTableHelper<IMerchantModel>();
+  const { tableFilter, onChangeTable } = useTableHelper<IMerchantModel>({pagination : true});
 
   const [search, setSearch] = useState<string>("");
 
@@ -74,8 +74,8 @@ const TableView: React.FC = () => {
         order_by: tableFilter.sort.order_by,
         search: searchValue,
         search_by: tableFilter.searchBy,
-        page: parseInt(tableFilter.pagination.current),
-        take: parseInt(tableFilter.pagination.pageSize),
+        page: Number(tableFilter.pagination.current),
+        take: Number(tableFilter.pagination.pageSize),
       }),
   });
 
@@ -89,20 +89,26 @@ const TableView: React.FC = () => {
     setOpen(true);
   };
 
-  const handleOk = () => {
-    setConfirmLoading(true);
-    deleteMutation.mutate(+String(merchantData.id), {
-      onSuccess: () => {
-        refetch();
-        setOpen(false);
-        setConfirmLoading(false);
-      },
-      onError: () => {
-        setOpen(false);
-        setConfirmLoading(false);
-      },
-    });
-  };
+  const handleOk = () => {  
+    setConfirmLoading(true);  
+    deleteMutation.mutate(+String(merchantData.id), {  
+      onSuccess: () => {  
+        api.success({  
+          message: "Merchant has been deleted and is waiting for approval.",  
+        });  
+        refetch();  
+        setOpen(false);  
+        setConfirmLoading(false);  
+      },  
+      onError: () => {  
+        api.error({  
+          message: "Something went wrong while deleting the merchant.",  
+        });  
+        setOpen(false);  
+        setConfirmLoading(false);  
+      },  
+    });  
+  };  
 
   const handleCancel = () => {
     setOpen(false);
@@ -284,7 +290,7 @@ const TableView: React.FC = () => {
         useGlobalSearchInput
         onChange={onChangeTable}
         scroll={{ x: true }}
-        responsive
+
       />
     </>
   );

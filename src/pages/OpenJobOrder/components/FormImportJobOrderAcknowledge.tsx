@@ -26,9 +26,9 @@ const FormImportJobOrderAcknowledge: React.FC<IFormImportJobOrder> = ({
 		>
 			<AlertValidation errorKey="import-job-order-new" />
 			<Space direction="vertical" className="w-full">
-				<p className="font-semibold text-lg">1. Download File Template</p>
+				<p className="font-semibold text-lg">1. Download File Open Job Order</p>
 				<Button onClick={() => downloadTemplateJobOrderAcknowledge()}>
-					Download File Template
+					Download File Open Job Order
 				</Button>
 				<p className="font-semibold text-lg">2. Upload Data</p>
 				<small>File sesuai dengan template dan dalam format xlsx</small>

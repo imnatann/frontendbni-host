@@ -1,50 +1,47 @@
+// src/components/TableReceiveIn.tsx
+
 import DataTable from "@smpm/components/DataTable";
-import { ColumnsType } from "antd/es/table";
+import { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import moment from "moment";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { receivedInService } from "@smpm/services/receivedInService";
+import { ReceivedInItem } from "@smpm/models/receivedInModel";
+import { message, Spin } from "antd";
+import { SorterResult } from "antd/es/table/interface";
 
-const data = [
-  {
-    tid: "YM1123232",
-    brand: "INGENICO",
-    brand_type: "MOVE 200",
-    approved_at: new Date(),
-  },
-  {
-    tid: "PX22343",
-    brand: "PAX",
-    brand_type: "D210",
-    approved_at: new Date(),
-  },
-];
+interface TableReceiveInProps {
+  data: ReceivedInItem[];
+  loading: boolean;
+}
 
-const TableReceiveIn = () => {
-  const columns = useMemo((): ColumnsType<any> => {
+const TableReceiveIn: React.FC<TableReceiveInProps> = ({ data, loading }) => {
+  const columns: ColumnsType<ReceivedInItem> = useMemo((): ColumnsType<ReceivedInItem> => {
     return [
       {
         title: "TID",
-        dataIndex: "tid",
+        dataIndex: ["edc", "tid"],
         sorter: true,
         sortDirections: ["descend", "ascend"],
       },
       {
         title: "Merk",
-        dataIndex: "brand",
+        dataIndex: ["edc", "brand"],
         sorter: true,
         sortDirections: ["descend", "ascend"],
       },
       {
         title: "Jenis Merk",
-        dataIndex: "brand_type",
+        dataIndex: ["edc", "brand_type"],
         sorter: true,
         sortDirections: ["descend", "ascend"],
       },
       {
         title: "Approved At",
-        dataIndex: "approved_at",
+        dataIndex: "updated_at",
         sorter: true,
         sortDirections: ["descend", "ascend"],
-        render: (value, record) => {
+        render: (value: string) => {
           return moment(value).format("DD MMMM YYYY");
         },
       },
@@ -52,12 +49,24 @@ const TableReceiveIn = () => {
   }, []);
 
   return (
-    <DataTable
-      dataSource={data}
-      columns={columns}
-      useGlobalSearchInput
-      bordered
-    />
+    <div>
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <DataTable
+          dataSource={data}
+          columns={columns}
+          pagination={{
+            current: 1,
+            pageSize: 10,
+            total: data.length,
+          }}
+          useGlobalSearchInput
+          rowKey="id"
+          bordered
+        />
+      )}
+    </div>
   );
 };
 

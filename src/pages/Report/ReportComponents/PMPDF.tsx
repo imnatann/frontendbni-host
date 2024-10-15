@@ -3,7 +3,7 @@ import { Document, Page, Text, View, Image } from "@react-pdf/renderer";
 import { ReportPDFProps } from "@smpm/models/jobOrderModel";
 import { PDFDateIndo, setToEndOfDay } from "@smpm/utils/dateUtils";
 
-const ReportPDF = ({ data }: ReportPDFProps) => {
+const PMPDF = ({ data }: ReportPDFProps) => {
   const displayValue = (value: string | null | undefined | "" | " " | "undefined" | "null") =>
     value && value.trim() !== "" ? value : "-";
 
@@ -324,14 +324,14 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
           <View style={{  
             width: "80%",  
             marginBottom: 20,  
-            shadowColor: "#000",  
-            shadowOffset: {  
-              width: 0,  
-              height: 2,  
-            },  
-            shadowOpacity: 0.23,  
-            shadowRadius: 2.62,  
-            elevation: 4,  
+            // shadowColor: "#000",  
+            // shadowOffset: {  
+            //   width: 0,  
+            //   height: 2,  
+            // },  
+            // shadowOpacity: 0.23,  
+            // shadowRadius: 2.62,  
+            // elevation: 4,  
             marginLeft: 5,  
           }}>  
             <View style={{  
@@ -401,4 +401,4 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
     </Document>
     );
   }
-    export default ReportPDF;
+    export default PMPDF;

@@ -1,7 +1,10 @@
+
 import {
   HomeOutlined,
- } from "@ant-design/icons";
+} from "@ant-design/icons";
 import PageContent from "@smpm/components/PageContent";
+import PageLabel from "@smpm/components/pageLabel";
+import Page from "@smpm/components/pageTitle";
 import { IconBuildingStore } from "@tabler/icons-react";
 import {
   Breadcrumb,
@@ -11,17 +14,15 @@ import {
   Flex,
   Typography,
 } from "antd";
-import { useState } from "react";
+ import { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import Page from "@smpm/components/pageTitle";
-import PageLabel from "@smpm/components/pageLabel";
 import TableView from "./components/TableView";
-  const { Title } = Typography;
+const { Title } = Typography;
 
-const Region = () => {
+const Merchant = () => {
   const [ReportModalVisible, setReportModalVisible] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
   const onAddNewMerchant = () => navigate("/merchant/list-merchant/add");
 
   return (
@@ -55,18 +56,6 @@ const Region = () => {
               ]}
             />
           }
-          // endSection={
-          //   <Space>
-          //     <Button icon={<CloudUploadOutlined />}>Export</Button>
-          //     <Button
-          //       type="primary"
-          //       icon={<VerticalAlignTopOutlined />}
-          //       onClick={() => setReportModalVisible(true)}
-          //     >
-          //       Upload Data
-          //     </Button>
-          //   </Space>
-          // }
         />
         <PageContent>
           <Card>
@@ -89,4 +78,4 @@ const Region = () => {
   );
 };
 
-export default Region;
+export default Merchant;

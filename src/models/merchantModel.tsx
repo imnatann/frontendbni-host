@@ -1,12 +1,12 @@
 import { IRegionModel } from "./regionModel";
 
 export interface IMerchantModel {
-  file_2: any;
-  file_2: any;
+  file1: any;
+  file2: any;
   id?: number;
   
   region_id: number;
-  mid: number;
+  mid: string;
   name: string;
   category: string;
   customer_name: string;

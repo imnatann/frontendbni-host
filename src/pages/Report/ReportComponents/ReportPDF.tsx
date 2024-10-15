@@ -129,7 +129,7 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
                 Informasi Terminal
               </Text>
               {[
-                { label: "MID:", value: ": " + displayValue(data.job_order.merchant.mid) },
+                { label: "MID:", value: ": " + displayValue(data.job_order.merchant.mid) + ", " + displayValue(data.job_order.mid) },
                 { label: "TID, TID 2, TID 3:", value: ": " + formatValue(displayValue(data.job_order.tid)) },
                 { label: "CSI:", value: ": " + displayValue("-") },
               ].map((item, index) => (
@@ -226,7 +226,7 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
               Laporan Kerja Teknisi
             </Text>
 
-            <View style={{ marginBottom: 20, flexDirection: "row", justifyContent: "space-between" }}>
+            <View style={{ marginBottom: 15, flexDirection: "row", justifyContent: "space-between" }}>
               <View style={{ width: "50%" }}>
                 <View style={{ flexDirection: "row" }}>
                   <View style={{ width: "50%" }}>
@@ -335,7 +335,7 @@ const ReportPDF = ({ data }: ReportPDFProps) => {
               marginLeft: 30, 
             }}>  
               <View style={{ flexDirection: "row", backgroundColor: "#f0f0f0", fontWeight: "bold" }}>  
-                {["Product", "Serial Number", "Notes", "Action"].map((header, index) => (  
+                {["Account", "No Reference", "Feature", "Mid", "Tid", "Nominal"].map((header, index) => (  
                   <View key={index} style={{  
                     width: "25%",  
                     borderStyle: "solid",  

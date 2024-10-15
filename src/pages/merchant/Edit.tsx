@@ -24,11 +24,15 @@ const Edit = () => {
 
   const onFinish = (data: TFormFieldMerchant) => {
     editMutation.mutate(
-      { ...data, region_id: data.region_id?.id, id: +String(merchantId) },
+      {
+        ...data, region_id: data.region_id?.id, id: +String(merchantId),
+        file1: undefined,
+        file2: undefined
+      },
       {
         onSuccess: () => {
           api["success"]({
-            message: "Success Update Merchant.",
+            message: "Success Update Merchant and is waiting for approval.",
           });
           navigate("/merchant/list-merchant");
         },
@@ -126,7 +130,7 @@ const Edit = () => {
                     //   code: merchant?.result?.region?.code || "",
                     //   description: merchant?.result?.region?.description || "",
                     // },
-                    mid: merchant?.result?.mid,
+                    // mid: merchant?.result?.mid,
                     name: merchant?.result?.name,
                     category: merchant?.result?.category,
                     customer_name: merchant?.result?.customer_name,

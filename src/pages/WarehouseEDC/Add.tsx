@@ -15,7 +15,7 @@ const Add = () => {
     mutationFn: createDataEDC,
   });
 
-  const onFinish = (data) => {
+  const onFinish = (data: any) => {
     addMutation.mutate(
       {
         ...data,

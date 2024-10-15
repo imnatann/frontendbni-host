@@ -1,50 +1,51 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  HomeOutlined,
-  PlusOutlined,
-  CloudUploadOutlined,
-  VerticalAlignTopOutlined,
-} from "@ant-design/icons";
-import { IconBuildingStore } from "@tabler/icons-react";
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  Divider,
-  Flex,
-  Modal,
-  Space,
-  Typography,
-} from "antd";
-
-import PageContent from "@smpm/components/PageContent";
+import { Breadcrumb, Layout, Tabs, Typography } from "antd";
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import PageLabel from "@smpm/components/pageLabel";
-import Page from "@smpm/components/pageTitle";
-import TableView from "./components/TableView";
-import ModalUpload from "./components/ModalUpload";
+import { HomeOutlined, CheckSquareOutlined } from "@ant-design/icons";
+import AddRequest from "./components/Add/AddRequest";
+import EditRequest from "./components/Edit/EditRequest";
+import DeleteRequest from "./components/Delete/DeleteRequest";
 
-const { Title } = Typography;
-
-const MaintenanceIndex: React.FC = () => {
-  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+function MaintenanceIndex() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const onAddNewMaintenance = () => navigate("/maintenance/add");
+  // Determine the active tab based on the current location
+  const getCurrentTab = () => {
+    if (location.pathname.includes("addrequest")) return "1";
+    if (location.pathname.includes("editrequest")) return "2";
+    if (location.pathname.includes("deleterequest")) return "3";
+    return "1"; // Default to the first tab if no match
+  };
 
-  const showUploadModal = () => setUploadModalVisible(true);
-  const hideUploadModal = () => setUploadModalVisible(false);
+  const tabActive = getCurrentTab();
 
-  const handleUploadSuccess = () => {
-    // Refresh data or perform any necessary actions after successful upload
-    hideUploadModal();
+  const onChange = (key: string) => {
+    switch (key) {
+      case "1":
+        navigate("/merchant/maintenance-merchant/addrequest");
+        break;
+      case "2":
+        navigate("/merchant/maintenance-merchant/editrequest");
+        break;
+      case "3":
+        navigate("/merchant/maintenance-merchant/deleterequest");
+        break;
+      default:
+        navigate("/merchant/maintenance-merchant/addrequest");
+    }
   };
 
   return (
-    <Page title="Maintenance List">
+    <Layout
+      style={{
+        backgroundColor: "white",
+        padding: "30px",
+      }}
+    >
       <PageLabel
-        title={<span className="font-semibold text-2xl">Maintenance List</span>}
+        title={<span className="text-2xl font-semibold">Maintenance Merchant</span>}
         subtitle={
           <Breadcrumb
             items={[
@@ -58,55 +59,32 @@ const MaintenanceIndex: React.FC = () => {
                 ),
               },
               {
+                href: "/merchant",
                 title: (
                   <div className="flex gap-1">
-                    <IconBuildingStore size="1rem" />
+                    <CheckSquareOutlined className="mb-1" />
                     <span>Merchant</span>
                   </div>
                 ),
               },
               {
-                title: "Maintenance",
+                href: "/merchant/maintenance",
+                title: <span>Maintenance</span>,
               },
             ]}
           />
         }
-        endSection={
-          <Space>
-            <Button icon={<CloudUploadOutlined />}>Export</Button>
-            <Button
-              type="primary"
-              icon={<VerticalAlignTopOutlined />}
-              onClick={showUploadModal}
-            >
-              Upload Data
-            </Button>
-          </Space>
-        }
       />
-      <PageContent>
-        <Card>
-          <Flex justify="space-between" align="flex-end">
-            <Title level={3}>Maintenance</Title>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={onAddNewMaintenance}
-            >
-              Add New
-            </Button>
-          </Flex>
-          <Divider />
-          <TableView />
-        </Card>
-      </PageContent>
-      <ModalUpload
-        isModalVisible={uploadModalVisible}
-        handleCancel={hideUploadModal}
-        onUploadSuccess={handleUploadSuccess}
-      />
-    </Page>
+      <Tabs activeKey={tabActive} onChange={onChange}>
+        <Tabs.TabPane key="1" tab="Request Add Merchant" />
+        <Tabs.TabPane key="2" tab="Request Edit Merchant" />
+        <Tabs.TabPane key="3" tab="Request Delete Merchant" />
+      </Tabs>
+      {tabActive === "1" && <AddRequest />}
+      {tabActive === "2" && <EditRequest />}
+      {tabActive === "3" && <DeleteRequest />}
+    </Layout>
   );
-};
+}
 
 export default MaintenanceIndex;

@@ -34,3 +34,27 @@ export const remove = async (id: number): Promise<IBaseResponseService<void>> =>
   const response = await axios.delete(`/document-merchant/${id}`);  
   return response.data;  
 }  
+
+export const deleteFile = async (id: number, fileKey: 'file1' | 'file2') => {
+  const response = await axios.delete(`/document-merchant/${id}/file/${fileKey}`);
+  return response.data;
+};
+
+export const download = async (id: number, fileKey: 'file1' | 'file2'): Promise<{  
+  data: Blob;  
+  fileName: string;  
+  fileExtension: string;  
+}> => {  
+  const response = await axios.get(`/document-merchant/${id}/download/${fileKey}`, {  
+    responseType: 'blob',  
+  });  
+
+  const fileName = response.headers['content-disposition']?.split('filename=')[1];  
+  const fileExtension = response.headers['content-type'].split('/')[1];  
+
+  return {  
+    data: response.data,  
+    fileName: fileName?.replace(/"/g, ''),  
+    fileExtension,  
+  };  
+};

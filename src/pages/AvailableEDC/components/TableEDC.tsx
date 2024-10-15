@@ -8,7 +8,7 @@ import { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 
 const TableEDC = () => {
-  const { tableFilter } = useTableHelper<ElectronicDataCaptureMachine>();
+  const { tableFilter } = useTableHelper<ElectronicDataCaptureMachine>({pagination : true});
 
   const [search, setSearch] = useState<string>("");
 
@@ -28,8 +28,8 @@ const TableEDC = () => {
         order_by: tableFilter.sort.order_by,
         search: searchValue,
         search_by: tableFilter.searchBy,
-        page: parseInt(tableFilter.pagination.current),
-        take: parseInt(tableFilter.pagination.pageSize),
+        page: Number(tableFilter.pagination.current),
+        take: Number(tableFilter.pagination.pageSize),
       }),
   });
 

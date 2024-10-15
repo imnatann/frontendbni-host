@@ -7,7 +7,6 @@ import { ColumnsType } from "antd/es/table";
 import * as dayjs from "dayjs";  
 import { useMemo, useState, useEffect } from "react";  
 import FilterTable, { TOptions } from "./FilterTable";  
-import ReportPDF from "./ReportPDF";  
 import { pdf } from "@react-pdf/renderer";  
 import saveAs from "file-saver";  
 import { getDataMerchant } from "@smpm/services/merchantService";  
@@ -16,6 +15,7 @@ import { getAllRegion } from "@smpm/services/regionService";
 import { IPaginationRequest } from "@smpm/models";  
 import { getPMReports } from "@smpm/services/pmReportService";
 import { IPreventiveMaintenanceReportModel } from "@smpm/models/pmReportModel";
+import PMPDF from "./PMPDF";
  
 const { Title } = Typography;  
 const { RangePicker } = DatePicker;  
@@ -329,7 +329,7 @@ function PreventiveMaintenance() {
         })),
       };
   
-      const blob = await pdf(<ReportPDF data={transformedData} />).toBlob();  
+      const blob = await pdf(<PMPDF data={transformedData} />).toBlob();  
     saveAs(blob, `${record.job_order_no}_Report.pdf`);  
   } catch (error) {  
     console.error("Error generating PDF report:", error);  

@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useRef } from "react";  
-import { Button, Space, Typography, Pagination, message } from "antd";  
-import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";  
+import { Button, Typography, Pagination, message, Popconfirm, Tooltip } from "antd";  
+import { DeleteOutlined, DownloadOutlined, UploadOutlined } from "@ant-design/icons";  
 import DataTable from "@smpm/components/DataTable";  
 import { useDebounce } from "@smpm/utils/useDebounce";  
 import useTableHelper from "@smpm/utils/useTableHelper";  
 import { ColumnsType } from "antd/es/table";  
-import { useQuery, useQueryClient } from "@tanstack/react-query";  
+import { useQuery } from "@tanstack/react-query";  
 import { DocVendorModel } from "@smpm/models/documentModel";  
-import { findAll, update } from "@smpm/services/docvendorService";  
+import { findAll, update, download, deleteFile } from "@smpm/services/docvendorService";  
 import { formatDateIndo } from "@smpm/utils/dateUtils";  
 
 const { Text } = Typography;  
@@ -17,12 +17,31 @@ const TableDocVendor: React.FC = () => {
   const [search, setSearch] = useState<string>("");  
   const searchValue = useDebounce(search, 500);  
   const [fileUploads, setFileUploads] = useState<{ [key: string]: { file: File; name: string } }>({});  
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: { file: string; name: string } }>({});  
   const [currentPage, setCurrentPage] = useState<number>(1);  
   const [pageSize, setPageSize] = useState<number>(10);  
-  const queryClient = useQueryClient();  
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});  
 
   const onSearch = (value: string) => setSearch(value);  
+
+  const downloadFile = async (id: number, fileKey: 'file1' | 'file2') => {  
+    try {  
+      const { data, fileName } = await download(id, fileKey);  
+      const url = window.URL.createObjectURL(data);  
+      const link = document.createElement('a');  
+      link.href = url;  
+
+      // Force the .xlsx extension  
+      const forcedFileName = fileName.endsWith('.xlsx') ? fileName : `${fileName}.xlsx`;  
+      link.setAttribute('download', forcedFileName);  
+
+      document.body.appendChild(link);  
+      link.click();  
+      link.remove();  
+    } catch (error) {  
+      message.error("Error downloading file.");  
+    }  
+  };  
 
   const {  
     data: activityJobOrder,  
@@ -59,7 +78,11 @@ const TableDocVendor: React.FC = () => {
         delete updatedFiles[`${id}-${fileKey}`];  
         return updatedFiles;  
       });  
-      await refetch(); // Refetch the table data after successful upload  
+      setUploadedFiles((prev) => ({  
+        ...prev,  
+        [`${id}-${fileKey}`]: { file: `${id}-${fileKey}`, name: file.name },  
+      }));  
+      await refetch(); 
     } catch (error) {  
       message.error("File upload failed.");  
     }  
@@ -79,6 +102,21 @@ const TableDocVendor: React.FC = () => {
         ...prev,  
         [`${recordId}-${fileKey}`]: { file, name: file.name },  
       }));  
+    }  
+  };  
+
+  const handleDeleteFile = async (id: number, fileKey: 'file1' | 'file2') => {  
+    try {  
+      await deleteFile(id, fileKey);  
+      message.success("File deleted successfully.");  
+      setUploadedFiles((prev) => {  
+        const updatedFiles = { ...prev };  
+        delete updatedFiles[`${id}-${fileKey}`];  
+        return updatedFiles;  
+      });  
+      await refetch();  
+    } catch (error) {  
+      message.error("Failed to delete file.");  
     }  
   };  
 
@@ -119,73 +157,121 @@ const TableDocVendor: React.FC = () => {
       {  
         title: "File 1",  
         dataIndex: "file1",  
-        width: 400,  
+        width: 500,  
         render: (text, record) => (  
-          <Space size="middle">  
-            {text ? (  
-              <>  
-                <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
+          text ? (  
+            <div className="flex items-center justify-between">  
+              <div className="flex items-center">  
+                <Button  
+                  type="primary"  
+                  icon={<DownloadOutlined />}  
+                  className="min-w-[110px] mr-2"  
+                  onClick={() => downloadFile(record.id, 'file1')}  
+                >  
                   Download File  
                 </Button>  
-                <Text className="min-w-[100px]">{text}</Text>  
-              </>  
-            ) : (  
-              <>  
-                <input  
-                  type="file"  
-                  ref={(el) => fileInputRefs.current[`${record.id}-file1`] = el}  
-                  style={{ display: 'none' }}  
-                  onChange={(e) => handleFileChange(record.id, 'file1', e)}  
-                />  
-                <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file1')}>  
-                  {fileUploads[`${record.id}-file1`]?.name || "Upload File 1"}  
+                <Tooltip title={uploadedFiles[`${record.id}-file1`]?.name || text.substring(text.lastIndexOf('/') + 25)}>  
+                  <Text className="min-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">  
+                    {uploadedFiles[`${record.id}-file1`]?.name || text.substring(text.lastIndexOf('/') + 25).slice(0, 30) + "..."}  
+                  </Text>  
+                </Tooltip>  
+              </div>  
+              <div className="relative">  
+                <Popconfirm  
+                  title="Are you sure you want to delete this file?"  
+                  onConfirm={() => handleDeleteFile(record.id, 'file1')}  
+                  okText="Yes"  
+                  cancelText="No"  
+                >  
+                  <Button  
+                    type="primary"  
+                    danger  
+                    icon={<DeleteOutlined />}  
+                    shape="circle"  
+                  />  
+                </Popconfirm>  
+              </div>  
+            </div>  
+          ) : (  
+            <>  
+              <input  
+                type="file"  
+                ref={(el) => fileInputRefs.current[`${record.id}-file1`] = el}  
+                style={{ display: 'none' }}  
+                onChange={(e) => handleFileChange(record.id, 'file1', e)}  
+              />  
+              <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file1')}>  
+                {fileUploads[`${record.id}-file1`]?.name || "Upload File 1"}  
+              </Button>  
+              {fileUploads[`${record.id}-file1`] && (  
+                <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file1')}>  
+                  Save  
                 </Button>  
-                {fileUploads[`${record.id}-file1`] && (  
-                  <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file1')}>  
-                    Save  
-                  </Button>  
-                )}  
-              </>  
-            )}  
-          </Space>  
+              )}  
+            </>  
+          )  
         ),  
       },  
       {  
         title: "File 2",  
         dataIndex: "file2",  
-        width: 400,  
+        width: 500,  
         render: (text, record) => (  
-          <Space size="middle">  
-            {text ? (  
-              <>  
-                <Button type="primary" icon={<DownloadOutlined />} onClick={() => console.log(`Downloading ${text}`)}>  
+          text ? (  
+            <div className="flex items-center justify-between">  
+              <div className="flex items-center">  
+                <Button  
+                  type="primary"  
+                  icon={<DownloadOutlined />}  
+                  className="min-w-[110px] mr-2"  
+                  onClick={() => downloadFile(record.id, 'file2')}  
+                >  
                   Download File  
                 </Button>  
-                <Text className="min-w-[100px]">{text}</Text>  
-              </>  
-            ) : (  
-              <>  
-                <input  
-                  type="file"  
-                  ref={(el) => fileInputRefs.current[`${record.id}-file2`] = el}  
-                  style={{ display: 'none' }}  
-                  onChange={(e) => handleFileChange(record.id, 'file2', e)}  
-                />  
-                <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file2')}>  
-                  {fileUploads[`${record.id}-file2`]?.name || "Upload File 2"}  
+                <Tooltip title={uploadedFiles[`${record.id}-file2`]?.name || text.substring(text.lastIndexOf('/') + 25)}>  
+                  <Text className="min-w-[210px] overflow-hidden text-ellipsis whitespace-nowrap">  
+                    {uploadedFiles[`${record.id}-file2`]?.name || text.substring(text.lastIndexOf('/') + 25).slice(0, 30) + "..."}  
+                  </Text>  
+                </Tooltip>  
+              </div>  
+              <div className="relative">  
+                <Popconfirm  
+                  title="Are you sure you want to delete this file?"  
+                  onConfirm={() => handleDeleteFile(record.id, 'file2')}  
+                  okText="Yes"  
+                  cancelText="No"  
+                >  
+                  <Button  
+                    type="primary"  
+                    danger  
+                    icon={<DeleteOutlined />}  
+                    shape="circle"  
+                  />  
+                </Popconfirm>  
+              </div>  
+            </div>  
+          ) : (  
+            <>  
+              <input  
+                type="file"  
+                ref={(el) => fileInputRefs.current[`${record.id}-file2`] = el}  
+                style={{ display: 'none' }}  
+                onChange={(e) => handleFileChange(record.id, 'file2', e)}  
+              />  
+              <Button type="primary" icon={<UploadOutlined />} onClick={() => triggerFileInput(record.id, 'file2')}>  
+                {fileUploads[`${record.id}-file2`]?.name || "Upload File 2"}  
+              </Button>  
+              {fileUploads[`${record.id}-file2`] && (  
+                <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file2')}>  
+                  Save  
                 </Button>  
-                {fileUploads[`${record.id}-file2`] && (  
-                  <Button type="primary" className="ml-2" onClick={() => handleFileUpload(record.id, 'file2')}>  
-                    Save  
-                  </Button>  
-                )}  
-              </>  
-            )}  
-          </Space>  
+              )}  
+            </>  
+          )  
         ),  
       },  
     ],  
-    [fileUploads]  
+    [fileUploads, uploadedFiles]  
   );  
 
   const handlePageChange = (page: number, size?: number) => {  
@@ -200,6 +286,7 @@ const TableDocVendor: React.FC = () => {
       ...activityData.map((item: any) => ({  
         id: item.id,  
         name: item.jobOrder.no,  
+        no_jo: item.jobOrder.no_jo,  
         jenis_jo: item.jobOrder.type,  
         vendor_name: item.vendor.name,  
         merk_edc: item.edc.brand,  

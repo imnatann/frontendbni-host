@@ -29,8 +29,6 @@ export const getDataMerchant = async (
   return response.data;
 };
 
-
-
 export const getDataMerchantById = async (
   id: number
 ): Promise<IBaseResponseService<IMerchantModel>> => {

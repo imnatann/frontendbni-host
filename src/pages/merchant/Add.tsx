@@ -1,4 +1,3 @@
-import FormFieldEDC from "@smpm/components/FormFields/FormFieldEDC";
 import FormFieldMerchant, {
   TFormFieldMerchant,
 } from "@smpm/components/FormFields/FormFieldMerchant";
@@ -7,9 +6,8 @@ import PageContent from "@smpm/components/PageContent";
 import PageLabel from "@smpm/components/pageLabel";
 import Page from "@smpm/components/pageTitle";
 import { createDataMerchant } from "@smpm/services/merchantService";
-import { getAllRegion } from "@smpm/services/regionService";
 import { IconWashMachine } from "@tabler/icons-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Breadcrumb, Button, Card, Flex, notification } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -21,28 +19,31 @@ const Add = () => {
 
   const [api] = notification.useNotification();
 
-  const onFinish = (data: TFormFieldMerchant) => {
-    addMutation.mutate(
+  const onFinish = (data: TFormFieldMerchant) => {  
+    addMutation.mutate(  
       {  
         ...data,  
-        region_id: data.region_id.id,  
-        mid: +data.mid,  
+        region_id: data.region_id?.id,  
+        mid: data.mid.toString(),  
+        file1: undefined,  
+        file2: undefined,  
       },  
-      {
-        onSuccess: () => {
-          api.success({
-            message: "Success Create New Merchant.",
-          });
-          navigate("/merchant/list-merchant");
-        },
-        onError: () => {
-          api.error({
-            message: "Something went wrong.",
-          });
-        },
-      }
-    );
-  };
+      {  
+        onSuccess: () => {  
+          api.success({  
+            message: "New merchant has been created and is waiting for approval.",  
+          });  
+          navigate("/merchant/list-merchant");  
+        },  
+        onError: (error) => {  
+          api.error({  
+            message: "Something went wrong.",  
+          });  
+          console.error(error);  
+        },  
+      }  
+    );  
+  };  
 
   return (
     <Page title={"Add New Merchant"}>
