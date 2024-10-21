@@ -1,7 +1,7 @@
 // src/pages/ReceiveOut/components/ListNeedApprovalOut.tsx
 
 import React from "react";
-import { Button, List, Spin, Typography, Popconfirm } from "antd";
+import { Button, List, Spin, Typography } from "antd";
 import { ReceivedOutItem } from "@smpm/models/receivedOutModel";
 
 const { Text } = Typography;
@@ -47,14 +47,9 @@ const ListNeedApprovalOut: React.FC<ListNeedApprovalOutProps> = ({
                   <div className="text-xs text-gray-500">
                     Region: {item.region?.name ?? "N/A"} | Vendor: {item.vendor?.name ?? "N/A"}
                   </div>
-                  <Popconfirm
-                    title="Apakah Anda yakin ingin menyetujui ReceivedOut ini?"
-                    onConfirm={() => onApprove(item.id)}
-                    okText="Ya"
-                    cancelText="Tidak"
-                  >
-                    <Button type="primary">Approve</Button>
-                  </Popconfirm>
+                  <Button type="primary" onClick={() => onApprove(item.id)}>
+                    Approve
+                  </Button>
                 </div>
               </div>
             </List.Item>

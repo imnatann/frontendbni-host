@@ -1,5 +1,3 @@
-// src/components/TableReceiveIn.tsx
-
 import DataTable from "@smpm/components/DataTable";
 import { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import moment from "moment";
@@ -33,6 +31,19 @@ const TableReceiveIn: React.FC<TableReceiveInProps> = ({ data, loading }) => {
       {
         title: "Jenis Merk",
         dataIndex: ["edc", "brand_type"],
+        sorter: true,
+        sortDirections: ["descend", "ascend"],
+      },
+      
+      {
+        title: "Petugas",
+        dataIndex: "petugas",
+        sorter: true,
+        sortDirections: ["descend", "ascend"],
+      },
+      {
+        title: "Kondisi Barang",
+        dataIndex: "kondisibarang",
         sorter: true,
         sortDirections: ["descend", "ascend"],
       },

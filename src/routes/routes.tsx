@@ -18,6 +18,7 @@ export const MaintenanceEdit = lazy(() => import("@smpm/pages/maintenance/compon
 export const MaintenanceDelete = lazy(() => import("@smpm/pages/maintenance/components/Delete/DeleteRequest"))
 export const Approve = lazy(() => import("@smpm/pages/Approve/Index"))
 export const Payment = lazy(() => import("@smpm/pages/Payment/Index"))
+export const EditEDC = lazy(() => import("@smpm/pages/WarehouseEDC/Edit"))
 
 
 export const routes: RouteObject[] = [
@@ -61,7 +62,13 @@ export const routes: RouteObject[] = [
 					{
 						path: "warehouse-edc",
 						Component: lazy(() => import("@smpm/pages/WarehouseEDC")),
+				
 					},
+					{
+						path: "warehouse-edc/edit/:id",
+						element : <EditEDC />,
+					},
+				
 					{
 						path: "attached-edc",
 						Component: lazy(() => import("@smpm/pages/AttachedEDC")),

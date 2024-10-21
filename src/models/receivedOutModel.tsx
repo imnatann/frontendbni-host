@@ -52,6 +52,8 @@ export interface JobOrder {
     id_region: number;
     id_vendor: number;
     id_merchant: number;
+    petugas: string;
+    kondisibarang : string,
     status: string;
     approved_by: number | null;
     created_by: number | null;

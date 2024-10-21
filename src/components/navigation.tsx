@@ -143,7 +143,7 @@ const Navigation: React.FC<IProps> = ({ children }) => {
         <Sidebar   
           collapsed={localCollapsed}   
           onCollapse={handleCollapse}  
-          className="md:relative z-40"  
+          className="z-40 md:relative"  
         >  
           <Menu  
             mode="inline"  

@@ -53,6 +53,8 @@ export const receivedInService = {
     approveReceivedInDto: {
       approved_by?: number;
       updated_by?: number;
+      petugas?: string; // Add this line
+      kondisibarang?: string; // Add this line
     }
   ): Promise<IBaseResponseService<ReceivedInItem>> => {
     const response = await axios.patch<ApproveReceivedInResponse>(`/received-in/${id}/approve`, approveReceivedInDto);
@@ -61,4 +63,4 @@ export const receivedInService = {
       result: response.data.result,
     };
   },
-};
+}

@@ -73,6 +73,8 @@ export const receivedOutService = {
   approveItem: async (
     id: number,
     approveReceivedOutDto: {
+      petugas?: string;
+      kondisibarang?: string;
       approved_by?: number;
       updated_by?: number;
     }
@@ -84,5 +86,4 @@ export const receivedOutService = {
     };
   },
 
-  // Add other functions like bulkApprove and bulkReject if needed
 };

@@ -58,15 +58,17 @@ const ReceiveIn = () => {
     fetchApprovedData();
   }, [fetchNeedApprovalData, fetchApprovedData]);
 
-  const handleApprove = async (id: number) => {
+  const handleApprove = async (id: number, petugas: string, kondisibarang: string) => {
     try {
       const userId = 1; // Replace with logic to get the real user ID
       const response = await receivedInService.approveItem(id, {
         approved_by: userId,
         updated_by: userId,
+        petugas, // Pass the petugas name
+        kondisibarang,
       });
       message.success(`Item with ID ${id} approved successfully.`);
-
+  
       // Update the states after approval
       fetchNeedApprovalData();
       fetchApprovedData();

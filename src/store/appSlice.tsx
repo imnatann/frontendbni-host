@@ -1,3 +1,5 @@
+// src/store/appSlice.ts
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 
@@ -23,7 +25,6 @@ const initialState: AppState = {
 
 export const appSlice = createSlice({
   name: "app",
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
     setErrorValidation: (state, action: PayloadAction<IErrorValidation>) => {
