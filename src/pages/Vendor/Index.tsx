@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import {
   CloudUploadOutlined,
@@ -9,7 +8,7 @@ import PageContent from "@smpm/components/PageContent"
 import PageLabel from "@smpm/components/pageLabel"
 import Page from "@smpm/components/pageTitle"
 import { IconBuildingStore } from "@tabler/icons-react"
-import { Breadcrumb, Button, Card, Space, Modal, Form, Input, message } from "antd"
+import { Breadcrumb, Button, Card, Space, Modal, Form, Input, message, Select } from "antd"
 import TableVendor from "./components/TableVendor"
 import { createVendor } from '@smpm/services/vendorService';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,7 +33,7 @@ const Vendor: React.FC = () => {
         form.resetFields();
         setRefreshKey(prevKey => prevKey + 1); 
         queryClient.invalidateQueries({ queryKey: ['vendors'] }); 
-       } else {
+        } else {
         throw new Error(response.message || 'Failed to add vendor');
       }
     } catch (error) {
@@ -56,7 +55,7 @@ const Vendor: React.FC = () => {
   return (
     <Page title="Vendor">
       <PageLabel
-        title={<span className="font-semibold text-2xl">Vendor</span>}
+        title={<span className="text-2xl font-semibold">Vendor</span>}
         subtitle={
           <Breadcrumb
             items={[
@@ -122,6 +121,16 @@ const Vendor: React.FC = () => {
             rules={[{ required: true, message: 'Please input the vendor code!' }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="jenis"
+            label="Jenis"
+            rules={[{ required: true, message: 'Please select the vendor type!' }]}
+          >
+            <Select>
+              <Select.Option value="Milik">Milik</Select.Option>
+              <Select.Option value="Sewa">Sewa</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item
             name="description"

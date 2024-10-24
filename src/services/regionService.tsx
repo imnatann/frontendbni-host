@@ -62,3 +62,5 @@ import {
 	const response = await axios.delete(`/region/${id}`)  
 	return response.data  
   }
+
+  

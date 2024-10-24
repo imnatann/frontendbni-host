@@ -34,6 +34,7 @@ export interface IMetaPagination {
 }
 
 export interface IPaginationResponse<T> {
+  items(items: any): unknown
 	data: T[]
 	meta: IMetaPagination
 }

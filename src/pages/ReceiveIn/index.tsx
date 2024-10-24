@@ -26,6 +26,8 @@ const ReceiveIn = () => {
         status: "waiting",
         page: 1,
         take: 10,
+        order: "desc",
+        order_by: "id"
       });
       setNeedApprovalData(response.result.data);
     } catch (error: any) {
@@ -43,6 +45,8 @@ const ReceiveIn = () => {
         status: "approved",
         page: 1,
         take: 10,
+        order: "desc",
+        order_by: "id"
       });
       setApprovedData(response.result.data);
     } catch (error: any) {

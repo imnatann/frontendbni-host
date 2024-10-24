@@ -96,6 +96,26 @@ export interface ReceivedOut {
   deleted_at: Date | null;
 }
 
+export interface ReceivedIn {
+  id: number;
+  id_joborder: number;
+  id_edc: number;
+  id_region: number;
+  id_vendor: number;
+  id_merchant: number | null;
+  petugas: string;
+  kondisibarang: string;
+  status: string;
+  approved_by: number;
+  created_by: number | null;
+  updated_by: number;
+  created_at: Date;
+  updated_at: Date;
+  serial_number: string;
+  tid: string;
+  deleted_at: Date | null;
+}
+
 export interface ActivityVendorReport {
   id: number;
   job_order_no: string;
@@ -134,4 +154,9 @@ export interface ActivityVendorReport {
 
 export interface GetEdcBrandTypeDto {
   brand: string;
+}
+
+export interface IFilterEDC {
+  brand?: string;
+  type?: string;
 }

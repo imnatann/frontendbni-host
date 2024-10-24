@@ -155,6 +155,10 @@ const TableVendor: React.FC<TableVendorProps> = ({ refreshData }) => {
         dataIndex: "description",
       },
       {
+        title: "JENIS VENDOR",
+        dataIndex: "jenis",
+      },
+      {
         title: "ACTION",
         key: "action",
         render: (_, record) => (

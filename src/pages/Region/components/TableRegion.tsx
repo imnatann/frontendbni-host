@@ -168,7 +168,7 @@ const updateMutation = useMutation({
 
       <Modal
         title="Edit Region"
-        visible={isEditModalVisible}
+        open={isEditModalVisible}
         onOk={handleEditModalOk}
         onCancel={handleEditModalCancel}
         confirmLoading={updateMutation.isPending}
@@ -199,5 +199,4 @@ const updateMutation = useMutation({
     </>
   )
 }
-
 export default TableRegion

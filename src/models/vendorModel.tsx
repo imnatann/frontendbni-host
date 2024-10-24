@@ -2,6 +2,7 @@ export interface IVendorModel {
 	id: number;  
 	name: string;  
 	code: string;  
+	jenis: string;
 	description: string | null;  
 	created_by: number;  
 	updated_by: number;  

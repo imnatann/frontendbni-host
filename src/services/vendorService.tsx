@@ -21,6 +21,34 @@ export const getVendor = async (
   }
 }
 
+export const getVendorMilik = async (
+  param: IPaginationRequest
+  ): Promise<IBaseResponseService<IPaginationResponse<IVendorModel>>> => {
+    try {
+      const response = await axios.get("/vendor?jenis=milik", {
+        params: param,
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error in getVendorMilik:', error);
+      throw error;
+    }
+  }
+
+  export const getVendorSewa = async (
+    param: IPaginationRequest
+    ): Promise<IBaseResponseService<IPaginationResponse<IVendorModel>>> => {
+      try {
+        const response = await axios.get("/vendor?jenis=sewa", {
+          params: param,
+        })
+        return response.data
+      } catch (error) {
+        console.error('Error in getVendorMilik:', error);
+        throw error;
+      }
+    }
+
 export const updateVendor = async (
   id: number,
   vendorData: Partial<IVendorModel>

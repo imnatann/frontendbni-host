@@ -28,7 +28,7 @@ const TableReceiveOut: React.FC<TableReceiveOutProps> = ({ data, loading }) => {
         sortDirections: ["descend", "ascend"],
       },
       {
-        title: "Jenis Merk",
+        title: "Merk EDC",
         dataIndex: ["edc", "brand_type"],
         sorter: true,
         sortDirections: ["descend", "ascend"],

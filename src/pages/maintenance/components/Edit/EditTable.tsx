@@ -19,10 +19,10 @@ const TableApprove: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await getApprovalHistoryEdit({ type: 'Edit', page: currentPage });
+        const response = await getApprovalHistoryEdit({ type: 'Edit', page: currentPage, take: pageSize, order: 'desc', order_by: 'created_at' });
         console.log("Approval History Response:", response); // Debugging
         if (response.result && Array.isArray(response.result.items)) {
-          setData(response.result.items);
+          setData(response.result.items as unknown as IApproveMerchantModel[]);
           setTotalItems(response.result.meta.item_count);
         } else {
           setData([]);
@@ -33,8 +33,7 @@ const TableApprove: React.FC = () => {
         message.error('Failed to fetch approval history.');
       }
       setIsLoading(false);
-    };
-    fetchData();
+    };    fetchData();
   }, [currentPage]);
 
   const columns = useMemo((): ColumnsType<IApproveMerchantModel> => {
@@ -140,7 +139,7 @@ const TableApprove: React.FC = () => {
           >
             {Object.entries(dataBefore).map(([key, value]) => (
               <Descriptions.Item key={key} label={key}>
-                {typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : value || 'N/A'}
+                {typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : String(value || 'N/A')}
               </Descriptions.Item>
             ))}
           </Descriptions>
@@ -154,7 +153,7 @@ const TableApprove: React.FC = () => {
           >
             {Object.entries(dataAfter).map(([key, value]) => (
               <Descriptions.Item key={key} label={key}>
-                {typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : value || 'N/A'}
+                {typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : String(value || 'N/A')}
               </Descriptions.Item>
             ))}
           </Descriptions>

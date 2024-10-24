@@ -19,7 +19,7 @@ const TableApprove: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await getApprovalHistoryAdd({ type: 'Add', page: currentPage });
+        const response = await getApprovalHistoryAdd({ type: 'Add', page: currentPage, take: pageSize, order: 'desc', order_by: 'created_at' });
         console.log("Approval History Response:", response); // Debugging
         if (response.result && Array.isArray(response.result.items)) {
           setData(response.result.items);
@@ -33,8 +33,7 @@ const TableApprove: React.FC = () => {
         message.error('Failed to fetch approval history.');
       }
       setIsLoading(false);
-    };
-    fetchData();
+    };    fetchData();
   }, [currentPage]);
 
   const columns = useMemo((): ColumnsType<IApproveMerchantModel> => {

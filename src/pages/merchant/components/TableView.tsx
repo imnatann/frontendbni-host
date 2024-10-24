@@ -1,11 +1,14 @@
-
+// src/components/TableView.tsx
 
 import {
+  CodepenCircleOutlined,
   DeleteOutlined,
-  EditOutlined
+  EditOutlined,
 } from "@ant-design/icons";
 import DataTable from "@smpm/components/DataTable";
 import { IMerchantModel } from "@smpm/models/merchantModel";
+import { ElectronicDataCaptureMachine } from "@smpm/models/edcModel";
+import { getEDCsByMerchantId } from "@smpm/services/edcService"; // Tambahkan import ini
 import {
   deleteDataMerchant,
   getDataMerchant,
@@ -13,32 +16,10 @@ import {
 import { useDebounce } from "@smpm/utils/useDebounce";
 import useTableHelper from "@smpm/utils/useTableHelper";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Modal, notification } from "antd";
+import { Button, Modal, notification, Spin, Table } from "antd"; // Tambahkan Spin dan Table untuk loading dan menampilkan data EDC
 import type { ColumnsType } from "antd/es/table";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-interface DataTypeNew {
-  id: number;
-  key: React.Key;
-  mid: string;
-  tid: string;
-  kode_wilayah: string;
-  merchant_name: string;
-  nama_nasabah: string;
-  contact: string;
-  phone: string;
-  kode_cbg: string;
-  kategori: string;
-  address1: string;
-  address2: string;
-  address3: string;
-  address4: string;
-}
-
-const data_new: DataTypeNew[] = [
-  // ... (data_new array remains unchanged)
-];
 
 const TableView: React.FC = () => {
   const [searchColumn, setSearchColumn] = useState<string | null>(null);
@@ -47,13 +28,13 @@ const TableView: React.FC = () => {
     mutationFn: deleteDataMerchant,
   });
 
-  const [api] = notification.useNotification();
+  const [api, contextHolder] = notification.useNotification(); // Perbaiki destructuring untuk notification
 
   const setSelectedSearchColumn = useCallback((value: any) => {
     setSearchColumn(value);
   }, []);
 
-  const { tableFilter, onChangeTable } = useTableHelper<IMerchantModel>({pagination : true});
+  const { tableFilter, onChangeTable } = useTableHelper<IMerchantModel>({ pagination: true });
 
   const [search, setSearch] = useState<string>("");
 
@@ -79,39 +60,71 @@ const TableView: React.FC = () => {
       }),
   });
 
-  const [open, setOpen] = useState<boolean>(false);
+  // State untuk modal delete
+  const [openDelete, setOpenDelete] = useState<boolean>(false);
   const [merchantData, setMerchantData] = useState<IMerchantModel>({});
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
-  const [modalText, setModalText] = useState<string>("Content of the modal");
 
-  const showModal = (row: IMerchantModel) => {
+  // State untuk modal EDCs
+  const [openEDCModal, setOpenEDCModal] = useState<boolean>(false);
+  const [edcData, setEdcData] = useState<ElectronicDataCaptureMachine[]>([]); // Inisialisasi sebagai array kosong
+  const [edcLoading, setEdcLoading] = useState<boolean>(false);
+  const [selectedMerchantName, setSelectedMerchantName] = useState<string>("");
+
+  // Fungsi untuk membuka modal delete
+  const showDeleteModal = (row: IMerchantModel) => {
     setMerchantData(row);
-    setOpen(true);
+    setOpenDelete(true);
   };
 
-  const handleOk = () => {  
-    setConfirmLoading(true);  
-    deleteMutation.mutate(+String(merchantData.id), {  
-      onSuccess: () => {  
-        api.success({  
-          message: "Merchant has been deleted and is waiting for approval.",  
-        });  
-        refetch();  
-        setOpen(false);  
-        setConfirmLoading(false);  
-      },  
-      onError: () => {  
-        api.error({  
-          message: "Something went wrong while deleting the merchant.",  
-        });  
-        setOpen(false);  
-        setConfirmLoading(false);  
-      },  
-    });  
-  };  
+  // Fungsi untuk membuka modal EDC
+  const showEDCModal = async (row: IMerchantModel) => {
+    setSelectedMerchantName(row.name);
+    setOpenEDCModal(true);
+    setEdcLoading(true);
+    try {
+      const edcs = await getEDCsByMerchantId(row.id);
+      setEdcData(edcs); // edcData pasti array karena sudah disiapkan di service
+    } catch (error: any) {
+      api.error({
+        message: "Gagal mengambil data EDC.",
+        description: error.message || "Terjadi kesalahan saat mengambil data EDC.",
+      });
+      setEdcData([]); // Reset edcData jika terjadi error
+    } finally {
+      setEdcLoading(false);
+    }
+  };
 
-  const handleCancel = () => {
-    setOpen(false);
+  const handleOkDelete = () => {
+    setConfirmLoading(true);
+    deleteMutation.mutate(+String(merchantData.id), {
+      onSuccess: () => {
+        api.success({
+          message: "Merchant telah dihapus dan sedang menunggu persetujuan.",
+        });
+        refetch();
+        setOpenDelete(false);
+        setConfirmLoading(false);
+      },
+      onError: () => {
+        api.error({
+          message: "Terjadi kesalahan saat menghapus merchant.",
+        });
+        setOpenDelete(false);
+        setConfirmLoading(false);
+      },
+    });
+  };
+
+  const handleCancelDelete = () => {
+    setOpenDelete(false);
+  };
+
+  const handleCloseEDCModal = () => {
+    setOpenEDCModal(false);
+    setEdcData([]);
+    setSelectedMerchantName("");
   };
 
   const columns: ColumnsType<IMerchantModel> = useMemo(
@@ -249,9 +262,15 @@ const TableView: React.FC = () => {
                   style={{ marginRight: 8, display: "inline-block" }}
                 />
                 <Button
-                  onClick={() => showModal(row)}
+                  onClick={() => showDeleteModal(row)}
                   icon={<DeleteOutlined />}
                   style={{ marginRight: 8, display: "inline-block" }}
+                />
+                {/* Tombol untuk membuka modal EDC */}
+                <Button
+                  onClick={() => showEDCModal(row)}
+                  icon={<CodepenCircleOutlined />}
+                  style={{ display: "inline-block" }}
                 />
               </span>
             );
@@ -262,20 +281,120 @@ const TableView: React.FC = () => {
     [navigate]
   );
 
+  // Kolom untuk tabel EDC
+  const edcColumns: ColumnsType<ElectronicDataCaptureMachine> = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "MID",
+      dataIndex: "mid",
+      key: "mid",
+    },
+    {
+      title: "TID",
+      dataIndex: "tid",
+      key: "tid",
+    },
+    {
+      title: "Brand",
+      dataIndex: "brand",
+      key: "brand",
+    },
+    {
+      title: "Brand Type",
+      dataIndex: "brand_type",
+      key: "brand_type",
+    },
+    {
+      title: "Serial Number",
+      dataIndex: "serial_number",
+      key: "serial_number",
+    },
+    {
+      title: "Status Owner",
+      dataIndex: "status_owner",
+      key: "status_owner",
+    },
+    {
+      title: "Status Machine",
+      dataIndex: "status_machine",
+      key: "status_machine",
+    },
+    {
+      title: "Status Active",
+      dataIndex: "status_active",
+      key: "status_active",
+      render: (status: boolean) => (status ? "Active" : "Inactive"),
+    },
+    {
+      title: "Region",
+      dataIndex: "region",
+      key: "region",
+    },
+    {
+      title: "Simcard Provider",
+      dataIndex: "simcard_provider",
+      key: "simcard_provider",
+    },
+    {
+      title: "Simcard Number",
+      dataIndex: "simcard_number",
+      key: "simcard_number",
+    },
+    // Tambahkan kolom lain sesuai kebutuhan
+  ];
+
   return (
     <>
+      {contextHolder} {/* Tempatkan contextHolder untuk notifications */}
+      {/* Modal Delete */}
       <Modal
         title={`Delete Merchant`}
-        open={open}
-        onOk={handleOk}
+        open={openDelete}
+        onOk={handleOkDelete}
         confirmLoading={confirmLoading}
-        onCancel={handleCancel}
+        onCancel={handleCancelDelete}
       >
         <p style={{ fontSize: "18px" }}>
           Are you sure delete Merchant{" "}
-          <span style={{ fontWeight: "bold" }}>{merchantData.name}</span> ?
+          <span style={{ fontWeight: "bold" }}>{merchantData.name}</span>?
         </p>
       </Modal>
+
+      {/* Modal EDC */}
+      <Modal
+        title={`EDC List for Merchant: ${selectedMerchantName}`}
+        open={openEDCModal}
+        onCancel={handleCloseEDCModal}
+        footer={[
+          <Button key="close" onClick={handleCloseEDCModal}>
+            Close
+          </Button>,
+        ]}
+        width={1100}
+      >
+        {edcLoading ? (
+          <div style={{ textAlign: "center", padding: "50px 0" }}>
+            <Spin size="large" />
+          </div>
+        ) : edcData.length > 0 ? (
+          <Table
+            dataSource={edcData}
+            columns={edcColumns}
+            pagination={false}
+            rowKey="id"
+            bordered
+            scroll={{ x: "max-content" }}
+          />
+        ) : (
+          <p>No EDCs found for this merchant.</p>
+        )}
+      </Modal>
+
+      {/* DataTable untuk Merchant */}
       <DataTable<IMerchantModel>
         dataSource={merchant?.result.data}
         pagination={{
@@ -290,7 +409,6 @@ const TableView: React.FC = () => {
         useGlobalSearchInput
         onChange={onChangeTable}
         scroll={{ x: true }}
-
       />
     </>
   );

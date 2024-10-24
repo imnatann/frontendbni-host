@@ -36,6 +36,8 @@ const ReceiveOut = () => {
       const response = await receivedOutService.findWaiting({
         page: 1,
         take: 10, // Adjust as needed
+        order: 'desc',
+        order_by: 'id'
       });
       setNeedApprovalData(response.result.data);
     } catch (error: any) {
@@ -45,7 +47,6 @@ const ReceiveOut = () => {
       setLoadingNeedApproval(false);
     }
   }, []);
-
   // Fetch approved items
   const fetchApprovedData = useCallback(async () => {
     setLoadingApproved(true);
@@ -53,6 +54,8 @@ const ReceiveOut = () => {
       const response = await receivedOutService.findAll({
         page: 1,
         take: 10, // Adjust as needed
+        order: 'desc',
+        order_by: 'id'
       });
       // Filter approved items on the frontend
       const approvedItems = response.result.data.filter(item => item.status === 'approved');
@@ -64,7 +67,6 @@ const ReceiveOut = () => {
       setLoadingApproved(false);
     }
   }, []);
-
   // Fetch data on component mount
   useEffect(() => {
     fetchNeedApprovalData();
