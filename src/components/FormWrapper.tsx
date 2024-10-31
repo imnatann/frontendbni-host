@@ -1,7 +1,10 @@
+// src/components/FormWrapper.tsx
+
 import { Form } from "antd";
+import React from "react";
 
 type FormWrapperProps<T> = {
-  children: any;
+  children: React.ReactNode;
   name?: string;
   onFinish: (value: T) => void;
 };

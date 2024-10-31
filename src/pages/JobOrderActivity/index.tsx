@@ -316,7 +316,7 @@ const JobOrderActivity = () => {
 			</Modal>
 			<PageLabel
 				title={
-					<span className="font-semibold text-2xl">
+					<span className="text-2xl font-semibold">
 						Job Order Activity - {no_jo}
 					</span>
 				}

@@ -9,7 +9,7 @@ export type IStatusCode = {
 
 export interface IBaseResponseService<T = any | IErrorResponseService> {
 	status: IStatusCode
- 	result: T
+ 	result: any
 	message?: string
 }
 
@@ -46,6 +46,7 @@ export interface IPaginationRequest {
 	search_by?: string[]
 	order: "desc" | "asc"
 	order_by: string
+
 }
 
 export interface IErrorTable {

@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ColumnsType } from "antd/es/table";
 import EDCDetail from './EDCDetail';
 import { Button, Modal, Form, Input, Select, Switch, message, Popconfirm, Spin, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -208,34 +208,54 @@ const TableEDC = () => {
         {
           title: "Aksi",
           key: "action",
-          render: (_, record) => (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button
-                icon={<EditOutlined />}
-                onClick={() => {
-                  setEditingRecordId(record.id);
-                  setIsModalVisible(true);
-                }}
-                type="primary"
-              />
-              <Popconfirm
-                title="Apakah Anda yakin ingin menghapus data ini?"
-                onConfirm={() => deleteMutation.mutate(record.id)}
-                okText="Ya"
-                cancelText="Tidak"
-              >
+          render: (_, record) => {
+            const isExpanded = expandedRowKeys.includes(record.id);
+            return (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {/* Tombol Toggle Detail */}
                 <Button
-                  icon={<DeleteOutlined />}
-                  type="primary"
-                  danger
+                  icon={isExpanded ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                  onClick={() => {
+                    setExpandedRowKeys(prev =>
+                      prev.includes(record.id) ? [] : [record.id]
+                    );
+                  }}
+                  type="text"
+                  title={isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail"}
                 />
-              </Popconfirm>
-            </div>
-          ),
+
+                {/* Tombol Edit */}
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={() => {
+                    setEditingRecordId(record.id);
+                    setIsModalVisible(true);
+                  }}
+                  type="text"
+                  title="Edit"
+                />
+
+                {/* Tombol Delete dengan Popconfirm */}
+                <Popconfirm
+                  title="Apakah Anda yakin ingin menghapus data ini?"
+                  onConfirm={() => deleteMutation.mutate(record.id)}
+                  okText="Ya"
+                  cancelText="Tidak"
+                >
+                  <Button
+                    icon={<DeleteOutlined />}
+                    type="text"
+                    danger
+                    title="Hapus"
+                  />
+                </Popconfirm>
+              </div>
+            );
+          },
           sorter: false,
         },
       ];
-    }, [deleteMutation, statusColorMapping]);
+    }, [deleteMutation, expandedRowKeys, statusColorMapping]);
 
   const expandedRowRender = (record: ElectronicDataCaptureMachine) => (
     <EDCDetail record={record} />
@@ -298,6 +318,8 @@ const TableEDC = () => {
             record.ActivityVendorReport.length > 0 ||
             record.owner !== null ||
             record.merchant !== null,
+          // Hilangkan ikon ekspansi default dengan mengatur expandIcon ke null
+          expandIcon: () => null,
           expandedRowKeys,
           onExpand,
         }}

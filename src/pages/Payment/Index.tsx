@@ -3,11 +3,11 @@ import PageLabel from "@smpm/components/pageLabel";
 import Page from "@smpm/components/pageTitle";  
 // import { IconBuildingStore } from "@tabler/icons-react";  
 import { Breadcrumb, Card, Divider, Flex, Typography } from "antd";  
+import TablePayment from "./components/TablePayment";  
 import {  
   HomeOutlined,  
 } from "@ant-design/icons";  
 import { IconCurrencyDollar } from "@tabler/icons-react"
-import TablePayment from "./components/TablePayment";
 
 const { Title } = Typography;  
 
@@ -34,7 +34,7 @@ const Payment = () => {
   return (  
     <Page title={"Payment"}>  
       <PageLabel  
-        title={<span className="font-semibold text-2xl">Payment</span>}  
+        title={<span className="text-2xl font-semibold">Payment</span>}  
         subtitle={  
           <Breadcrumb  
             items={[  

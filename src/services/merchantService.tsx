@@ -42,3 +42,8 @@ export const deleteDataMerchant = async (
   const response = await axios.delete(`/merchant/${id}`);
   return response.data;
 };
+
+export const getMerchantsForDropdown = async (): Promise<IBaseResponseService<{ id: number; name: string }[]>> => {
+  const response = await axios.get("/merchant/dropdown");
+  return response.data;
+};

@@ -1,7 +1,7 @@
 import DataTable from "@smpm/components/DataTable";
 import { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import moment from "moment";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { receivedInService } from "@smpm/services/receivedInService";
 import { ReceivedInItem } from "@smpm/models/receivedInModel";

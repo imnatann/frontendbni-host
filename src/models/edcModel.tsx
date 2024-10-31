@@ -2,34 +2,35 @@
 
 export interface ElectronicDataCaptureMachine {
   id: number;
-  owner_id: number;
-  merchant_id: number;
-  mid: string;
-  tid: string;
-  brand: string;
-  brand_type: string;
-  serial_number: string;
-  status_owner: string;
-  status_owner_desc: string;
-  status_machine: string;
-  status_machine_desc: string;
-  status_active: boolean;
+  owner_id?: number;
+  merchant_id?: number;
+  mid?: string;
+  tid?: string;
+  brand?: string;
+  brand_type?: string;
+  serial_number?: string;
+  status_owner?: string;
+  status_owner_desc?: string;
+  status_machine?: string;
+  status_machine_desc?: string;
+  status_active?: boolean;
   simcard_provider?: string;
-  simcard_number: string;
-  status_edc: string;
+  simcard_number?: string;
+  status_edc?: string;
   info?: string;
   kondisibarang?: string;
-  region: string;
+  region?: string;
   created_by?: number;
   updated_by?: number;
-  created_at: Date;
-  updated_at: Date;
+  created_at?: Date;
+  updated_at?: Date;
   deleted_at?: Date;
-  owner: Owner;
-  merchant: Merchant;
-  ReceivedIn: ReceivedIn[]; // Jika relevan
-  ReceivedOut: ReceivedOut[];
-  ActivityVendorReport: ActivityVendorReport[];
+  owner?: Owner;
+  merchant?: Merchant;
+  ReceivedIn?: ReceivedIn[];
+  ReceivedOut?: ReceivedOut[];
+  ActivityVendorReport?: ActivityVendorReport[];
+  key?: number; // For Ant Design Table
 }
 
 export interface Owner {
@@ -73,10 +74,6 @@ export interface Merchant {
 }
 
 export interface ReceivedIn {
-  // Definisikan properti yang sesuai jika diperlukan
-}
-
-export interface ReceivedOut {
   id: number;
   id_joborder: number;
   id_edc: number;
@@ -96,7 +93,7 @@ export interface ReceivedOut {
   deleted_at: Date | null;
 }
 
-export interface ReceivedIn {
+export interface ReceivedOut {
   id: number;
   id_joborder: number;
   id_edc: number;
@@ -151,12 +148,65 @@ export interface ActivityVendorReport {
   deleted_at: Date | null;
 }
 
-
 export interface GetEdcBrandTypeDto {
-  brand: string;
+  brand?: string;
+  type?: string;
 }
 
 export interface IFilterEDC {
   brand?: string;
   type?: string;
+}
+
+export interface IPaginationRequest {
+  order?: "asc" | "desc";
+  // Remove order_by if not needed
+  // order_by?: string;
+  search?: string;
+  search_by?: string;
+  page?: number;
+  take?: number;
+  simcard_provider?: string;
+  region?: string;
+  status_owner?: string;
+  merchant_id?: number[];
+  status_active?: boolean;
+  status_edc?: string[];
+  brand?: string[];
+  type?: string[];
+}
+
+
+export interface IBaseResponseService<T> {
+  status: {
+    code: number;
+    description: string;
+  };
+  result: {
+    status: string;
+    data: T;
+    meta?: {
+      itemCount: number;
+      totalItems: number;
+      itemsPerPage: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  };
+}
+
+export interface IPaginationResponse<T> {
+  data: T[];
+  meta: {
+    itemCount: number;
+    totalItems: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
+export interface ProviderEntity {
+  id_provider_simcard: number;
+  name_provider: string;
 }

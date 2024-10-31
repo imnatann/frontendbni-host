@@ -11,18 +11,21 @@ import { getActivityJobOrder } from "@smpm/services/paymentService";
 import { getVendor } from "@smpm/services/vendorService";  
 import { useQuery } from "@tanstack/react-query";  
 import * as dayjs from "dayjs";  
+import { Button } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
+import { useNavigate } from 'react-router-dom';  
 
 
 const TablePayment: React.FC = () => {  
-  const { tableFilter, onChangeTable } = useTableHelper<PaymentModel>({pagination: true});  
+  const { tableFilter, onChangeTable } = useTableHelper<PaymentModel>();  
   const [search, setSearch] = useState<string>("");  
   const searchValue = useDebounce(search, 500);  
   const [currentPage, setCurrentPage] = useState<number>(1);  
-  const [pageSize, setPageSize] = useState<number>(10);  
+  const [pageSize, setPageSize] = useState<number>(10);
+  const navigate = useNavigate();    
 
   const onSearch = (value: string) => setSearch(value);  
-
-  // Fetch vendor data for the "Kode Vendor" column  
+ 
   const { data: vendorData, isLoading: vendorLoading } = useQuery<  
     IBaseResponseService<IPaginationResponse<IVendorModel>>  
   >({  
@@ -78,11 +81,39 @@ const TablePayment: React.FC = () => {
         sortDirections: ["descend", "ascend"],  
         render: (date) => dayjs(date).format("DD-MMM-YYYY"),  
       },
-      {  
-        title: "Status",  
-        dataIndex: "status",  
-      },  
-    ],  
+      {
+        title: "Status",
+        dataIndex: "status",
+        render: (status, record) => { 
+          if (status === "edit") {
+            return (
+              <Button type="dashed" style={{ borderColor: "orange", color: "orange" }}>
+                Edit
+              </Button>
+            );
+          }
+          if (status === "submit") {
+            return (
+              <Button type="primary" style={{ backgroundColor: "#00474f", borderColor: "#00474f" }}>
+                Submit
+              </Button>
+            );
+          }
+          if (status === "success") {
+            return (
+              <Button type="default" icon={<EyeOutlined />} style={{ color: "blue", borderColor: "blue" }}>
+                Success
+              </Button>
+            );
+          }
+          return (
+            <Button type="default" onClick={() => handleUnknownClick(record)}>  
+              Unknown  
+            </Button> 
+          );
+        },
+      },
+    ],
     [vendorData]  
   );  
 
@@ -91,11 +122,15 @@ const TablePayment: React.FC = () => {
     setPageSize(pageSize || 10);  
   };  
 
+  const handleUnknownClick = (record: PaymentModel) => {   
+    navigate(`/payment/unknown/${record.id}`);  
+  };
+
   return (  
     <div>  
       <div>  
         <DataTable<PaymentModel>  
-          dataSource={payment?.result?.data}  
+          dataSource={payment?.result.data}  
           pagination={false}  
           loading={paymentLoading || vendorLoading}  
           bordered  

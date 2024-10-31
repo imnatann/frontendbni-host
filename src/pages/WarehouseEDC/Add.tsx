@@ -8,67 +8,60 @@ import Page from "@smpm/components/pageTitle";
 import { createDataEDC } from "@smpm/services/edcService";
 import { IconWashMachine } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { Breadcrumb, Button, Card, Flex, Alert } from "antd";
+import { Alert, Breadcrumb, Button, Card, Flex } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { AxiosError } from "axios";
 
-interface BackendErrorResponse {
-  status: {
-    code: number;
-    description: string;
-  };
-  result: any;
+interface EDCFormData {
+  mid: string;
+  tid: string;
+  serial_number: string;
+  brand: string;
+  brand_type: string;
+  region?: string;
+  status_owner: string;
+  owner_id: number;
+  status_owner_desc?: string;
+  status_machine?: string;
+  status_machine_desc?: string;
+  status_active: boolean;
+  simcard_provider?: string;
+  simcard_number?: string;
+  status_edc?: string;
+  info?: string;
 }
 
 const Add = () => {
   const navigate = useNavigate();
-
-  // State to hold error message
   const [formError, setFormError] = useState<string | null>(null);
 
   const addMutation = useMutation({
     mutationFn: createDataEDC,
-    onError: (error: unknown) => {
-      // Log the entire error for debugging
-      console.error("Mutation Error:", error);
-
-      // Type guard to ensure error is an AxiosError with response data
-      if (isAxiosErrorWithResponse(error)) {
-        const backendError = error.response?.data as BackendErrorResponse;
-
-        if (
-          backendError &&
-          backendError.status &&
-          backendError.status.description
-        ) {
-          setFormError(backendError.status.description);
-        } else {
-          setFormError("Terjadi kesalahan saat menambahkan EDC.");
-        }
-      } else {
-        // Fallback for non-Axios errors
-        setFormError("Terjadi kesalahan saat menambahkan EDC.");
-      }
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.status?.description || 
+        "Terjadi kesalahan saat menambahkan EDC.";
+      setFormError(errorMessage);
     },
     onSuccess: () => {
       navigate("/inventory/warehouse-edc");
     },
   });
 
-  const onFinish = (data: any) => {
-    // Reset formError before submission
+  const onFinish = (values: EDCFormData) => {
     setFormError(null);
 
-    addMutation.mutate({
-      ...data,
-      status_active: true,
-      status_machine_desc: "oke",
-    });
+    // Pastikan semua field yang diperlukan ada
+    const payload = {
+      ...values,
+      status_active: values.status_active ?? true,
+      status_machine_desc: values.status_machine_desc || "oke",
+    };
+
+    addMutation.mutate(payload);
   };
 
   return (
-    <Page title={"Add New EDC"}>
+    <Page title="Add New EDC">
       <PageLabel
         title={<span className="text-2xl font-semibold">Add New EDC</span>}
         subtitle={
@@ -77,16 +70,15 @@ const Add = () => {
               {
                 href: "/inventory/warehouse-edc",
                 title: (
-                  <Flex align={"end"}>
+                  <Flex align="end">
                     <IconWashMachine />
                     <span>Warehouse EDC</span>
                   </Flex>
                 ),
               },
               {
-                href: "",
                 title: (
-                  <Flex align={"end"}>
+                  <Flex align="end">
                     <span>Add New EDC</span>
                   </Flex>
                 ),
@@ -96,8 +88,7 @@ const Add = () => {
         }
       />
       <PageContent>
-        <Card title={"Add New EDC"}>
-          {/* Render Alert if there's an error */}
+        <Card title="Add New EDC">
           {formError && (
             <Alert
               message="Error"
@@ -112,9 +103,9 @@ const Add = () => {
           <FormWrapper onFinish={onFinish}>
             <FormFieldEDC />
             <Button
-              type={"primary"}
-              htmlType={"submit"}
-              loading={addMutation.isLoading}
+              type="primary"
+              htmlType="submit"
+              loading={addMutation.isPending}
               style={{ marginTop: 16 }}
             >
               Submit
@@ -125,17 +116,4 @@ const Add = () => {
     </Page>
   );
 };
-
-// Type guard to check if error is AxiosError with response
-const isAxiosErrorWithResponse = (
-  error: unknown
-): error is AxiosError<BackendErrorResponse> => {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "isAxiosError" in error &&
-    (error as AxiosError).isAxiosError
-  );
-};
-
 export default Add;
